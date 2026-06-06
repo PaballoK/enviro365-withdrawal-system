@@ -1,4 +1,4 @@
-package com.enviro.assessment.junior.Paballo;
+package com.enviro.assessment.junior.paballo;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
