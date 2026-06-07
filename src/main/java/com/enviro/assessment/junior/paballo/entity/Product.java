@@ -28,6 +28,6 @@ public class Product {
     private BigDecimal balance;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "investor_id")
     private Investor investor;
 }
