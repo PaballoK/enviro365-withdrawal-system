@@ -16,7 +16,6 @@ export class WithdrawalService {
       return this.http.post<WithdrawalResponseDTO>(`${this.baseUrl}`,request);
     }
 
-   
    getWithdrawalHistory(investorId: number):Observable<WithdrawalResponseDTO[]>{
     return this.http.get<WithdrawalResponseDTO[]>(`${this.baseUrl}/investor/${investorId}`)
    } 

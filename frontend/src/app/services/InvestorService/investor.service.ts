@@ -15,4 +15,5 @@ export class InvestorService {
   getPortfolio(investorId: number): Observable<InvestorPortfolioDTO> {
     return this.http.get<InvestorPortfolioDTO>(`${this.baseUrl}/${investorId}`);
   }
+  
 }
