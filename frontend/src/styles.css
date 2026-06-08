@@ -1,1 +1,53 @@
 /* You can add global styles to this file, and also import other style files */
+
+
+:root {
+  --brand: #6366f1;
+  --brand-hover: #4f46e5;
+  --brand-active: #4338ca;
+}
+
+
+.p-button {
+  background: var(--brand);
+  border-color: var(--brand);
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.p-button:hover {
+  background: var(--brand-hover) !important;
+  border-color: var(--brand-hover) !important;
+}
+
+.p-button:active {
+  background: var(--brand-active) !important;
+  border-color: var(--brand-active) !important;
+}
+
+.p-button:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.p-button.p-button-text {
+  background: transparent;
+  border-color: transparent;
+  color: #6b7280;
+}
+
+.p-button.p-button-text:hover {
+  background: #f7f8fa !important;
+  border-color: transparent !important;
+  color: #111827 !important;
+}
+
+.p-inputnumber {
+  display: flex;
+  width: 100%;
+}
+
+.p-inputnumber-input {
+  flex: 1;
+  width: 100%;
+}
