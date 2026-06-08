@@ -14,6 +14,7 @@ import com.enviro.assessment.junior.paballo.repository.InvestorRepository;
 import com.enviro.assessment.junior.paballo.repository.ProductRepository;
 import com.enviro.assessment.junior.paballo.repository.WithdrawalNoticeRepository;
 import com.enviro.assessment.junior.paballo.service.WithdrawalService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -36,11 +37,11 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     private final InvestorRepository investorRepository;
     private final ProductRepository productRepository;
     private final WithdrawalNoticeRepository withdrawalNoticeRepository;
-    private final ModelMapper modelMapper;
 
     private final ProductFinder productFinder;
     private final InvestorFinder investorFinder;
 
+    @Transactional
     @Override
     public WithdrawalResponseDTO withdraw(WithdrawalRequestDTO request) {
 
@@ -80,8 +81,6 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     @Override
     public List<WithdrawalResponseDTO> getWithdrawalHistory(Long investorId) {
 
-        Investor investor = investorFinder.getInvestorByIdOrThrow(investorId);
-
         return withdrawalNoticeRepository.findByInvestorIdOrderByProcessedAtDesc(investorId).stream()
                 .map(withdrawalNotice -> WithdrawalResponseDTO.builder()
                         .id(withdrawalNotice.getId())
@@ -102,7 +101,7 @@ public class WithdrawalServiceImpl implements WithdrawalService {
 
         int age = Period.between(investor.getBirthDate(), LocalDate.now()).getYears();
 
-        if(age <= RETIREMENT_AGE){
+        if(age < RETIREMENT_AGE){
             throw new AgeRestrictionException("You cannot withdraw from your retirement unless you are 65 or older ");
         }
     }

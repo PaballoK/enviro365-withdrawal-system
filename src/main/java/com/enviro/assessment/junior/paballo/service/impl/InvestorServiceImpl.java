@@ -5,6 +5,7 @@ import com.enviro.assessment.junior.paballo.dto.ProductDTO;
 import com.enviro.assessment.junior.paballo.entity.Investor;
 import com.enviro.assessment.junior.paballo.entity.Product;
 import com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException;
+import com.enviro.assessment.junior.paballo.finder.InvestorFinder;
 import com.enviro.assessment.junior.paballo.repository.InvestorRepository;
 import com.enviro.assessment.junior.paballo.service.InvestorService;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +23,12 @@ public class InvestorServiceImpl implements InvestorService {
     private final InvestorRepository investorRepository;
     private final ModelMapper modelMapper;
 
+    private final InvestorFinder investorFinder;
+
     @Override
     public InvestorPortfolioDTO getPortfolio(Long investorId) {
 
-        Investor investor = investorRepository.findById(investorId)
-                .orElseThrow(() -> new InvestorNotFoundException("Investor Not found"));
+        Investor investor = investorFinder.getInvestorByIdOrThrow(investorId);
 
         List<ProductDTO> productDTOS = investor.getProducts().stream()
                 .map(product -> modelMapper.map(product, ProductDTO.class))
