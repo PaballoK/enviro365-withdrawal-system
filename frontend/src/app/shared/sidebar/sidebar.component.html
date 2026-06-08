@@ -1,0 +1,28 @@
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <i class="pi pi-chart-line"></i>
+    </div>
+    <div>
+      <div class="logo-name">Enviro365</div>
+      <div class="logo-sub">Investments Portal</div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Main</div>
+    <button pButton text [class.active]="activeItem === 'portfolio'" class="nav-item" icon="pi pi-th-large" label="Portfolio" routerLink="/dashboard"></button>
+    <button pButton text [class.active]="activeItem === 'withdrawals'" class="nav-item" icon="pi pi-arrow-down" label="Withdrawals" routerLink="/withdrawal"></button>
+    <button pButton text [class.active]="activeItem === 'history'" class="nav-item" icon="pi pi-file" label="History" [routerLink]="['/history', investorContext.currentInvestorId]"></button>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-row">
+      <div class="user-av">PK</div>
+      <div>
+        <div class="user-name">Paballo Kunutu</div>
+        <div class="user-role">Junior Developer</div>
+      </div>
+    </div>
+  </div>
+</aside>

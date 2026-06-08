@@ -13,11 +13,12 @@ import { ProductType } from '../../enums/ProductType';
 import { InvestorService } from '../../services/InvestorService/investor.service';
 import { InvestorContextService } from '../../services/InvestorContextService/investor-context.service';
 import { LoaderComponent } from '../../shared/loader/loader.component';
+import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, RouterLink, ButtonModule, AvatarGroupModule, AvatarModule, MenuModule, LoaderComponent],
+  imports: [CommonModule, RouterModule, RouterLink, ButtonModule, AvatarGroupModule, AvatarModule, MenuModule, LoaderComponent, SidebarComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -70,6 +71,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
+  }
+
+  get currentInvestorId(): number {
+    return this.investorContext.currentInvestorId;
   }
 
   get investorInitials(): string {

@@ -8,13 +8,14 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { InvestorService } from '../../services/InvestorService/investor.service';
 import { InvestorContextService } from '../../services/InvestorContextService/investor-context.service';
+import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 import { InvestorPortfolioDTO } from '../../core/models/InvestorPortfolioDTO';
 import { ProductDTO } from '../../core/models/ProductDTO';
 
 @Component({
   selector: 'app-withdrawal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, InputNumberModule, DropdownModule, RouterModule, RouterLink],
+  imports: [CommonModule, FormsModule, ButtonModule, InputNumberModule, DropdownModule, RouterModule, RouterLink, SidebarComponent],
   templateUrl: './withdrawal.component.html',
   styleUrl: './withdrawal.component.css'
 })
@@ -30,7 +31,7 @@ export class WithdrawalComponent implements OnInit, OnDestroy {
 
   constructor(
     private investorService: InvestorService,
-    private investorContext: InvestorContextService,
+    readonly investorContext: InvestorContextService,
     private route: ActivatedRoute
   ) {}
 

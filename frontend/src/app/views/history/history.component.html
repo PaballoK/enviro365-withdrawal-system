@@ -1,1 +1,118 @@
-<p>history works!</p>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <app-sidebar activeItem="history"></app-sidebar>
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+    
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">History</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost">Dashboard</button>
+        <button class="btn btn-accent">+ New Withdrawal</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <div class="page-header">
+        <div class="page-heading">Withdrawal History</div>
+        <div class="page-sub">All processed withdrawal notices across investors.</div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-card">
+        <div class="filter-left">
+
+          <div class="filter-sep"></div>
+
+          <!-- Date range -->
+          <div class="filter-field">
+            <span class="filter-lbl">From</span>
+            <input type="date" class="filter-input">
+          </div>
+          <div class="filter-field">
+            <span class="filter-lbl">To</span>
+            <input type="date" class="filter-input">
+          </div>
+
+        </div>
+
+        <!-- Export -->
+        <button class="export-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div class="state-loading">
+        <div class="spinner"></div>
+        <span>Loading history...</span>
+      </div>
+
+      <!-- Error -->
+      <div class="state-error" style="display: none">
+        ⚠ Could not load withdrawal history.
+      </div>
+
+      <!-- Empty -->
+      <div class="state-empty" style="display: none">
+        <div class="empty-icon">📋</div>
+        <div>No withdrawal records found.</div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <table class="dtbl">
+          <thead>
+            <tr>
+              <th>Ref</th>
+              <th>Product</th>
+              <th class="r">Amount</th>
+              <th class="r">Remaining Balance</th>
+              <th>Date Processed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ref-col">#38</td>
+              <td class="name-col">Sipho Retirement Annuity — Old Mutual</td>
+              <td class="r amt-col">R 50 000.00</td>
+              <td class="r bal-col">R 800 000.00</td>
+              <td class="date-col">02 Jun 2026, 14:22</td>
+            </tr>
+            <tr>
+              <td class="ref-col">#27</td>
+              <td class="name-col">Sipho Tax-Free Savings — FNB</td>
+              <td class="r amt-col">R 15 000.00</td>
+              <td class="r bal-col">R 105 000.00</td>
+              <td class="date-col">28 May 2026, 09:11</td>
+            </tr>
+            <tr>
+              <td class="ref-col">#19</td>
+              <td class="name-col">Sipho Retirement Annuity — Old Mutual</td>
+              <td class="r amt-col">R 100 000.00</td>
+              <td class="r bal-col">R 850 000.00</td>
+              <td class="date-col">15 Apr 2026, 16:45</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="tbl-footer">
+          <span class="tbl-count">3 records</span>
+          <span class="tbl-inv">Investor #1</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
