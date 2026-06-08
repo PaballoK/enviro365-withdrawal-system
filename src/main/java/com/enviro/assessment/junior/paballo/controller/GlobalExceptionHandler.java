@@ -7,6 +7,7 @@ import com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException;
 import com.enviro.assessment.junior.paballo.exception.ProductNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -32,6 +33,14 @@ public class GlobalExceptionHandler {
             ProductNotFoundException.class})
     public ResponseEntity<ApiErrorResponse> handleNotFoundExceptions(RuntimeException ex, WebRequest request) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(java.util.stream.Collectors.joining(", "));
+        return buildErrorResponse(message, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({InsufficientBalanceException.class, AgeRestrictionException.class})

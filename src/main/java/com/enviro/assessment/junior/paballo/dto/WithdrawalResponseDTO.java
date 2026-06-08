@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -20,5 +21,6 @@ public class WithdrawalResponseDTO {
     private String productName;
     private BigDecimal amount;
     private BigDecimal remainingBalance;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime processedAt;
 }

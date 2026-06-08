@@ -2,17 +2,13 @@
 
   <app-sidebar activeItem="withdrawals"></app-sidebar>
 
-  <!-- Main -->
   <div class="main">
 
-    <!-- Topbar -->
     <div class="topbar">
       <div class="topbar-left">
-
         <span class="breadcrumb-sep">/</span>
         <span class="breadcrumb-current">Withdrawals</span>
       </div>
-   
     </div>
 
     <div class="page">
@@ -24,79 +20,84 @@
 
       <div class="two-col">
 
-        <!-- Form card -->
         <div class="fcard">
           <div class="fcard-title">Withdrawal Request</div>
           <div class="fcard-sub">{{ investorName }} — choose a product and enter the amount.</div>
 
-          <!-- Product selector -->
-          <div class="field">
-            <label class="flbl">Product</label>
-            <div *ngIf="loadError" class="state-error">⚠ {{ loadError }}</div>
-            <p-dropdown
-              [options]="products"
-              [(ngModel)]="selectedProduct"
-              optionLabel="productName"
-              placeholder="Select a product"
-              appendTo="body"
-              [style]="{'width':'100%'}">
-              <ng-template pTemplate="item" let-product>
-                <div class="prod-dropdown-item">
-                  <span class="prod-dropdown-name">{{ product.productName }}</span>
-                  <span class="prod-dropdown-bal">{{ product.balance | currency:'ZAR':'symbol-narrow':'1.2-2' }}</span>
-                </div>
-              </ng-template>
-              <ng-template pTemplate="selectedItem" let-product>
-                <div *ngIf="product" class="prod-dropdown-item">
-                  <span class="prod-dropdown-name">{{ product.productName }}</span>
-                  <span class="prod-dropdown-bal">{{ product.balance | currency:'ZAR':'symbol-narrow':'1.2-2' }}</span>
-                </div>
-              </ng-template>
-            </p-dropdown>
-          </div>
+          <form [formGroup]="withdrawalForm" (ngSubmit)="submitWithdrawal()">
 
-          <!-- Amount -->
-          <div class="field">
-            <label class="flbl">Withdrawal Amount</label>
-            <div class="amt-wrap">
-              <p-inputNumber placeholder="0.00" mode="currency" currency="ZAR" locale="en-ZA" [minFractionDigits]="2" styleClass="amt-input" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-inputNumber>
+            <div class="field">
+              <label class="flbl">Product</label>
+              <div *ngIf="loadError" class="state-error">⚠ {{ loadError }}</div>
+              <p-dropdown
+                formControlName="product"
+                [options]="products"
+                optionLabel="productName"
+                placeholder="Select a product"
+                appendTo="body"
+                [style]="{'width':'100%'}">
+                <ng-template pTemplate="item" let-product>
+                  <div class="prod-dropdown-item">
+                    <span class="prod-dropdown-name">{{ product.productName }}</span>
+                    <span class="prod-dropdown-bal">{{ product.balance | currency:'ZAR':'symbol-narrow':'1.2-2' }}</span>
+                  </div>
+                </ng-template>
+                <ng-template pTemplate="selectedItem" let-product>
+                  <div *ngIf="product" class="prod-dropdown-item">
+                    <span class="prod-dropdown-name">{{ product.productName }}</span>
+                    <span class="prod-dropdown-bal">{{ product.balance | currency:'ZAR':'symbol-narrow':'1.2-2' }}</span>
+                  </div>
+                </ng-template>
+              </p-dropdown>
             </div>
-            <div class="amt-hint">Max allowed (90% cap): <strong>R 765 000.00</strong></div>
-          </div>
 
-          <!-- Gauge -->
-          <div class="gauge-box">
-            <div class="gauge-track">
-              <div class="gauge-fill" style="width: 40%"></div>
-              <div class="gauge-mark"></div>
+            <div class="field">
+              <label class="flbl">Withdrawal Amount</label>
+              <div class="amt-wrap">
+                <p-inputNumber
+                  formControlName="withdrawalAmount"
+                  placeholder="0.00"
+                  mode="currency"
+                  currency="ZAR"
+                  locale="en-ZA"
+                  [minFractionDigits]="2"
+                  styleClass="amt-input"
+                  [style]="{'width':'100%'}"
+                  [inputStyle]="{'width':'100%'}">
+                </p-inputNumber>
+              </div>
+              <div class="amt-hint" *ngIf="selectedProduct">
+                Max allowed (90% cap): <strong>{{ maxAllowed | currency:'ZAR':'symbol-narrow':'1.2-2' }}</strong>
+              </div>
             </div>
-            <div class="gauge-row">
-              <span>40.0% of balance</span>
-              <span class="cap">90% cap</span>
-            </div>
-          </div>
 
-          <button pButton label="Submit Withdrawal Request" class="submit-btn"></button>
+            <button
+              pButton
+              type="submit"
+              label="Submit Withdrawal Request"
+              class="submit-btn"
+              [disabled]="!isFormValid || isSubmitting"
+              [loading]="isSubmitting">
+            </button>
 
-          <!-- Success alert -->
-          <div class="alert alert-ok" style="display: none">
+          </form>
+
+          <div class="alert alert-ok" *ngIf="successResponse">
             <div class="alert-ttl"><i class="pi pi-check-circle"></i> Withdrawal Processed</div>
             <table class="dtable">
-              <tr><td>Product</td><td>Sipho Retirement Annuity</td></tr>
-              <tr><td>Amount withdrawn</td><td>R 50 000.00</td></tr>
-              <tr><td>Remaining balance</td><td>R 800 000.00</td></tr>
+              <tr><td>Product</td><td>{{ successResponse.productName }}</td></tr>
+              <tr><td>Amount withdrawn</td><td>{{ successResponse.amount | currency:'ZAR':'symbol-narrow':'1.2-2' }}</td></tr>
+              <tr><td>Remaining balance</td><td>{{ successResponse.remainingBalance | currency:'ZAR':'symbol-narrow':'1.2-2' }}</td></tr>
             </table>
           </div>
 
-          <!-- Error alert -->
-          <div class="alert alert-err" style="display: none">
+          <div class="alert alert-err" *ngIf="submitError">
             <div class="alert-ttl"><i class="pi pi-times-circle"></i> Withdrawal Failed</div>
-            <div class="alert-msg">Error message goes here.</div>
+            <div class="alert-msg">{{ submitError }}</div>
           </div>
 
         </div>
 
-    
       </div>
     </div>
   </div>

@@ -42,12 +42,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+
     this.investorMenuItems = this.investors.map(id => ({
       label: `Investor ${id}`,
       icon: 'pi pi-user',
       command: () => this.investorContext.selectInvestor(id)
     }));
 
+    this.subscribeToInvestor();
+
+  }
+
+  private subscribeToInvestor(): void {
     this.sub = this.investorContext.investorId$.subscribe(id => {
       this.loadPortfolio(id);
     });
@@ -86,11 +92,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
   }
 
-  portfolioShare(balance: number): number {
-    const total = this.portfolio?.totalValue;
-    if (!total) return 0;
-    return (balance / total) * 100;
-  }
 
   goToWithdrawal(productId: number): void {
     this.router.navigate(['/withdrawal'], { queryParams: { productId } });

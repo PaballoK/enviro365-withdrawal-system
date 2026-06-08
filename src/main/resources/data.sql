@@ -6,7 +6,7 @@ INSERT INTO investors (id, first_name, last_name, email, birth_date) VALUES
 INSERT INTO products (id, product_name, product_type, balance, investor_id) VALUES
 (1, 'Sipho Retirement Annuity - Old Mutual', 'RETIREMENT', 850000.00, 1),
 (2, 'Sipho Tax-Free Savings Account - FNB', 'SAVINGS', 120000.00, 1),
-(3, 'Thandi Unit Trust Portfolio - Allan Gray', 'INVESTMENT', 95000.00, 2),
+(3, 'Thandi Retirement Portfolio - Allan Gray', 'RETIREMENT', 95000.00, 2),
 (4, 'Thandi Easy Save Account - Standard Bank', 'SAVINGS', 45000.00, 2),
 (5, 'Pieter Pension Fund - Sanlam', 'RETIREMENT', 620000.00, 3),
 (6, 'Pieter Balanced Investment Portfolio - PSG Wealth', 'INVESTMENT', 180000.00, 3);

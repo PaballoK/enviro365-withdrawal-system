@@ -81,20 +81,9 @@
             <div class="card-balance-lbl">Balance</div>
             <div class="card-balance">{{ formatCurrency(product.balance) }}</div>
 
-            <!-- <div class="bar-wrap">
-              <div class="bar-track">
-                <div class="bar-fill"
-                  [class.ret]="product.productType === ProductType.RETIREMENT"
-                  [class.sav]="product.productType === ProductType.SAVINGS"
-                  [class.inv]="product.productType === ProductType.INVESTMENT"
-                  [style.width.%]="portfolioShare(product.balance)">
-                </div>
-              </div>
-              <div class="bar-lbl">{{ portfolioShare(product.balance) | number:'1.1-1' }}% of total portfolio</div>
-            </div> -->
 
             <div class="card-action">
-              <button pButton text class="card-btn" icon="pi pi-arrow-down" label="Withdraw" (click)="goToWithdrawal(product.id)"></button>
+              <button pButton text class="card-btn" label="Withdraw" (click)="goToWithdrawal(product.id)"></button>
             </div>
 
           </div>

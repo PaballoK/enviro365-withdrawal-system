@@ -1,5 +1,5 @@
 export enum ProductType {
-    RETIREMENT,
-    SAVINGS,
-    INVESTMENT
+    RETIREMENT = 'Retirement',
+    SAVINGS = 'Savings',
+    INVESTMENT = 'Investment'
 }
