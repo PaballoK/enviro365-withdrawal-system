@@ -61,6 +61,7 @@
 
 /* ── Amount ── */
 .amt-wrap { position: relative; margin-bottom: 6px; }
+.amt-wrap p-inputnumber { display: block; width: 100%; }
 .amt-input { width: 100%; }
 .amt-input .p-inputnumber { width: 100%; }
 .amt-input .p-inputnumber-input { width: 100%; padding: 13px; border-radius: 8px; border: 1.5px solid #e5e7eb; font-size: 22px; font-weight: 700; color: #111827; font-family: 'JetBrains Mono', monospace; outline: none; background: #ffffff; transition: border-color .15s; }

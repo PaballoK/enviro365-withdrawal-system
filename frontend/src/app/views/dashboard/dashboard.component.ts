@@ -45,7 +45,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.investorMenuItems = this.investors.map(id => ({
       label: `Investor ${id}`,
-      icon: 'pi pi-user',
       command: () => this.investorContext.selectInvestor(id)
     }));
 

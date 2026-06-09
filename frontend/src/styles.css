@@ -51,3 +51,8 @@
   flex: 1;
   width: 100%;
 }
+
+.p-dropdown-panel .p-dropdown-items,
+.p-menu .p-menu-list {
+  padding-left: 0;
+}
