@@ -276,6 +276,13 @@ All AI-generated code was reviewed, understood, and validated by the author befo
 
 ## Screenshots
 
-> Add screenshots of the running application here before submission.
+><img width="1440" height="900" alt="Screenshot 2026-06-09 at 16 42 47" src="https://github.com/user-attachments/assets/d8544ad5-89bd-4171-9163-9c1b287a5d7d" />
 
-will revert
+<img width="1440" height="820" alt="Screenshot 2026-06-09 at 16 38 55" src="https://github.com/user-attachments/assets/8150906b-f3dd-4175-a304-1aa93f607930" />
+
+<img width="1440" height="900" alt="Screenshot 2026-06-09 at 16 43 03" src="https://github.com/user-attachments/assets/9b36f739-e219-4db9-88c7-a1c2ae9681eb" />
+
+<img width="1440" height="900" alt="Screenshot 2026-06-09 at 16 43 42" src="https://github.com/user-attachments/assets/73c18d5f-aba4-44c6-aec7-4b802afe7361" />
+
+
+
