@@ -3,7 +3,6 @@ package com.enviro.assessment.junior.paballo.service.impl;
 import com.enviro.assessment.junior.paballo.dto.InvestorPortfolioDTO;
 import com.enviro.assessment.junior.paballo.dto.ProductDTO;
 import com.enviro.assessment.junior.paballo.entity.Investor;
-import com.enviro.assessment.junior.paballo.entity.Product;
 import com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException;
 import com.enviro.assessment.junior.paballo.finder.InvestorFinder;
 import com.enviro.assessment.junior.paballo.repository.InvestorRepository;
@@ -14,8 +13,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Implementation of {@link InvestorService} that handles investor portfolio retrieval.
+ */
 @Service
 @RequiredArgsConstructor
 public class InvestorServiceImpl implements InvestorService {
@@ -25,6 +26,14 @@ public class InvestorServiceImpl implements InvestorService {
 
     private final InvestorFinder investorFinder;
 
+    /**
+     * Fetches the investor by their ID, maps their products to DTOs, and calculates the total portfolio value
+     * by adding the balance of each product.
+     *
+     * @param investorId the ID of the investor to look up
+     * @return a fully populated {@link InvestorPortfolioDTO} with product details and total value
+     * @throws InvestorNotFoundException if the investor does not exist
+     */
     @Override
     public InvestorPortfolioDTO getPortfolio(Long investorId) {
 

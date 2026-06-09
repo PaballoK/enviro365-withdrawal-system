@@ -1,6 +1,7 @@
 package com.enviro.assessment.junior.paballo.service;
 
 import com.enviro.assessment.junior.paballo.dto.WithdrawalResponseDTO;
+import com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException;
 import com.enviro.assessment.junior.paballo.finder.InvestorFinder;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
@@ -12,6 +13,9 @@ import java.io.StringWriter;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Service responsible for generating CSV exports of an investor's withdrawal history.
+ */
 @Service
 @RequiredArgsConstructor
 public class CsvExportService {
@@ -19,6 +23,17 @@ public class CsvExportService {
     private final WithdrawalService withdrawalService;
     private final InvestorFinder investorFinder;
 
+    /**
+     * Builds a CSV string of all withdrawals for the given investor.
+     * If startDate or endDate are provided, only withdrawals within that range are included.
+     *
+     * @param investorId the ID of the investor
+     * @param startDate  optional start of the date range, can be null
+     * @param endDate    optional end of the date range, can be null
+     * @return a CSV-formatted string with headers and one row per withdrawal
+     * @throws IOException if writing to the CSV buffer fails
+     * @throws InvestorNotFoundException if no investor exists with the given ID
+     */
     public String exportWithdrawalHistory(Long investorId, LocalDate startDate, LocalDate endDate) throws IOException {
 
         investorFinder.getInvestorByIdOrThrow(investorId);
@@ -57,4 +72,5 @@ public class CsvExportService {
 
         return writer.toString();
     }
+
 }
