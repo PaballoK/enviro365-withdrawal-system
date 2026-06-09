@@ -7,6 +7,7 @@ import { Table, TableModule } from 'primeng/table';
 import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
 import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
+import { LoaderComponent } from '../../shared/loader/loader.component';
 import { WithdrawalService } from '../../services/WithdrawalService/withdrawal.service';
 import { InvestorContextService } from '../../services/InvestorContextService/investor-context.service';
 import { WithdrawalResponseDTO } from '../../core/models/WithdrawalResponseDTO';
@@ -14,7 +15,7 @@ import { WithdrawalResponseDTO } from '../../core/models/WithdrawalResponseDTO';
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, CalendarModule, ButtonModule, SidebarComponent,RouterLink],
+  imports: [CommonModule, FormsModule, TableModule, CalendarModule, ButtonModule, SidebarComponent, RouterLink, LoaderComponent],
   templateUrl: './history.component.html',
   styleUrl: './history.component.css'
 })
