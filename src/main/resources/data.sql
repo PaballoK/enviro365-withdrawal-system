@@ -1,7 +1,7 @@
-INSERT INTO investors (id, first_name, last_name, email, birth_date) VALUES
-(1, 'Sipho', 'Nkosi', 'sipho.nkosi@gmail.com', '1955-03-15'),
-(2, 'Thandi', 'Mokoena', 'thandi.mokoena@gmail.com', '1985-07-22'),
-(3, 'Pieter', 'van der Merwe', 'pieter.vdm@gmail.com', '1960-11-08');
+INSERT INTO investors (id, first_name, last_name, email, password, birth_date) VALUES
+(1, 'Sipho', 'Nkosi', 'sipho.nkosi@gmail.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', '1955-03-15'),
+(2, 'Thandi', 'Mokoena', 'thandi.mokoena@gmail.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', '1985-07-22'),
+(3, 'Pieter', 'van der Merwe', 'pieter.vdm@gmail.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', '1960-11-08');
 
 INSERT INTO products (id, product_name, product_type, balance, investor_id) VALUES
 (1, 'Sipho Retirement Annuity - Old Mutual', 'RETIREMENT', 850000.00, 1),
