@@ -1,13 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { InvestorService } from '../../services/InvestorService/investor.service';
-import { InvestorContextService } from '../../services/InvestorContextService/investor-context.service';
 import { WithdrawalService } from '../../services/WithdrawalService/withdrawal.service';
 import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 import { InvestorPortfolioDTO } from '../../core/models/InvestorPortfolioDTO';
@@ -21,7 +19,7 @@ import { WithdrawalResponseDTO } from '../../core/models/WithdrawalResponseDTO';
   templateUrl: './withdrawal.component.html',
   styleUrl: './withdrawal.component.css'
 })
-export class WithdrawalComponent implements OnInit, OnDestroy {
+export class WithdrawalComponent implements OnInit {
 
   portfolio: InvestorPortfolioDTO | null = null;
   products: ProductDTO[] = [];
@@ -34,45 +32,31 @@ export class WithdrawalComponent implements OnInit, OnDestroy {
   submitError: string | null = null;
   successResponse: WithdrawalResponseDTO | null = null;
 
-  private sub!: Subscription;
-
   constructor(
     private formBuilder: FormBuilder,
     private investorService: InvestorService,
     private withdrawalService: WithdrawalService,
-    readonly investorContext: InvestorContextService,
     private route: ActivatedRoute
   ) {
-    this.initiateWithdrawalForm();
-  }
-
-  ngOnInit(): void {
-    const productId = this.route.snapshot.queryParams['productId'];
-
-    this.sub = this.investorContext.investorId$.subscribe(id => {
-      this.loadPortfolio(id, productId ? +productId : null);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.sub.unsubscribe();
-  }
-
-  initiateWithdrawalForm(): void {
     this.withdrawalForm = this.formBuilder.group({
       product: [null, Validators.required],
       withdrawalAmount: [null, [Validators.required, Validators.min(0.01)]]
     });
   }
 
-  private loadPortfolio(investorId: number, preSelectProductId?: number | null): void {
+  ngOnInit(): void {
+    const productId = this.route.snapshot.queryParams['productId'];
+    this.loadPortfolio(productId ? +productId : null);
+  }
+
+  private loadPortfolio(preSelectProductId?: number | null): void {
     this.isLoadingProducts = true;
     this.loadError = null;
     this.successResponse = null;
     this.submitError = null;
     this.withdrawalForm.reset();
 
-    this.investorService.getPortfolio(investorId).subscribe({
+    this.investorService.getPortfolio().subscribe({
       next: (portfolio) => {
         this.portfolio = portfolio;
         this.products = portfolio.products;
@@ -113,7 +97,6 @@ export class WithdrawalComponent implements OnInit, OnDestroy {
     const { product, withdrawalAmount } = this.withdrawalForm.value;
 
     this.withdrawalService.withdraw({
-      investorId: this.investorContext.currentInvestorId,
       productId: product.id,
       withdrawalAmount
     }).subscribe({
@@ -132,8 +115,7 @@ export class WithdrawalComponent implements OnInit, OnDestroy {
   }
 
   get investorName(): string {
-    if (!this.portfolio) return `Investor ${this.investorContext.currentInvestorId}`;
+    if (!this.portfolio) return '';
     return `${this.portfolio.firstName} ${this.portfolio.lastName}`;
   }
-
 }

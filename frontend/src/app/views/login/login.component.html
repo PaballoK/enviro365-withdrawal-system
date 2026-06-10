@@ -1,0 +1,55 @@
+<div class="login-page">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <i class="pi pi-chart-line logo-icon"></i>
+      <div class="logo-name">Enviro365</div>
+      <div class="logo-sub">Investments Portal</div>
+    </div>
+
+    <div class="login-heading">Sign in to your account</div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submit()">
+
+      <div class="field">
+        <label class="flbl">Email</label>
+        <input
+          type="email"
+          formControlName="email"
+          class="finput"
+          placeholder="you@example.com"
+          autocomplete="email"/>
+        <div class="field-error"
+          *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Enter a valid email address.
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="flbl">Password</label>
+        <input
+          type="password"
+          formControlName="password"
+          class="finput"
+          placeholder="••••••••"
+          autocomplete="current-password"/>
+        <div class="field-error"
+          *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Password is required.
+        </div>
+      </div>
+
+      <div class="alert-err" *ngIf="error">{{ error }}</div>
+
+      <button
+        pButton
+        type="submit"
+        label="Sign In"
+        class="login-btn"
+        [loading]="isLoading"
+        [disabled]="loginForm.invalid || isLoading">
+      </button>
+
+    </form>
+  </div>
+</div>

@@ -1,25 +1,22 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { Table, TableModule } from 'primeng/table';
 import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
 import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 import { LoaderComponent } from '../../shared/loader/loader.component';
 import { WithdrawalService } from '../../services/WithdrawalService/withdrawal.service';
-import { InvestorContextService } from '../../services/InvestorContextService/investor-context.service';
 import { WithdrawalResponseDTO } from '../../core/models/WithdrawalResponseDTO';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, CalendarModule, ButtonModule, SidebarComponent, RouterLink, LoaderComponent],
+  imports: [CommonModule, FormsModule, TableModule, CalendarModule, ButtonModule, SidebarComponent, LoaderComponent],
   templateUrl: './history.component.html',
   styleUrl: './history.component.css'
 })
-export class HistoryComponent implements OnInit, OnDestroy {
+export class HistoryComponent implements OnInit {
 
   @ViewChild('dt') dt!: Table;
 
@@ -30,29 +27,17 @@ export class HistoryComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
 
-  private sub!: Subscription;
-
-  constructor(
-    private router: Router,
-    private withdrawalService: WithdrawalService,
-    private investorContext: InvestorContextService
-  ) {}
+  constructor(private withdrawalService: WithdrawalService) {}
 
   ngOnInit(): void {
-    this.sub = this.investorContext.investorId$.subscribe(id => {
-      this.loadHistory(id);
-    });
+    this.loadHistory();
   }
 
-  ngOnDestroy(): void {
-    this.sub.unsubscribe();
-  }
-
-  private loadHistory(investorId: number): void {
+  private loadHistory(): void {
     this.isLoading = true;
     this.error = null;
 
-    this.withdrawalService.getWithdrawalHistory(investorId).subscribe({
+    this.withdrawalService.getWithdrawalHistory().subscribe({
       next: (data) => {
         this.records = data;
         this.applyDateFilter();
@@ -81,23 +66,19 @@ export class HistoryComponent implements OnInit, OnDestroy {
   exportCSV(): void {
     const toIso = (d: Date) => d.toISOString().split('T')[0];
     const startDate = this.fromDate ? toIso(this.fromDate) : undefined;
-    const endDate   = this.toDate   ? toIso(this.toDate)   : undefined;
+    const endDate = this.toDate ? toIso(this.toDate) : undefined;
 
-    this.withdrawalService.exportCsv(this.investorContext.currentInvestorId, startDate, endDate)
-      .subscribe(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `withdrawals-investor-${this.investorContext.currentInvestorId}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
+    this.withdrawalService.exportCsv(startDate, endDate).subscribe(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `withdrawals-statement.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
   }
 
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(value);
   }
-
-  
- 
 }

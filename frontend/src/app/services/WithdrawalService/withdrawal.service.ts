@@ -8,24 +8,25 @@ import { WithdrawalResponseDTO } from '../../core/models/WithdrawalResponseDTO';
   providedIn: 'root'
 })
 export class WithdrawalService {
- private readonly baseUrl = 'http://localhost:8080/api/withdrawals'; 
 
-  constructor(private http:HttpClient) { }
+  private readonly baseUrl = 'http://localhost:8080/api/withdrawals';
 
-    withdraw(request: WithdrawalRequestDTO):Observable<WithdrawalResponseDTO>{
-      return this.http.post<WithdrawalResponseDTO>(`${this.baseUrl}`,request);
-    }
+  constructor(private http: HttpClient) { }
 
-   getWithdrawalHistory(investorId: number):Observable<WithdrawalResponseDTO[]>{
-    return this.http.get<WithdrawalResponseDTO[]>(`${this.baseUrl}/investor/${investorId}`)
-   } 
+  withdraw(request: WithdrawalRequestDTO): Observable<WithdrawalResponseDTO> {
+    return this.http.post<WithdrawalResponseDTO>(this.baseUrl, request);
+  }
 
-    exportCsv(investorId: number, startDate?: string, endDate?: string): Observable<Blob> {
+  getWithdrawalHistory(): Observable<WithdrawalResponseDTO[]> {
+    return this.http.get<WithdrawalResponseDTO[]>(`${this.baseUrl}/history`);
+  }
+
+  exportCsv(startDate?: string, endDate?: string): Observable<Blob> {
     let params = new HttpParams();
     if (startDate) params = params.set('startDate', startDate);
     if (endDate) params = params.set('endDate', endDate);
 
-    return this.http.get(`${this.baseUrl}/investor/${investorId}/export`, {
+    return this.http.get(`${this.baseUrl}/export`, {
       params,
       responseType: 'blob',
     });

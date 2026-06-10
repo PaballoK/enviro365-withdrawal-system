@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { RouterModule, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { InvestorContextService } from '../../services/InvestorContextService/investor-context.service';
+import { AuthService } from '../../services/AuthService/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,5 +13,5 @@ import { InvestorContextService } from '../../services/InvestorContextService/in
 export class SidebarComponent {
   @Input() activeItem: 'portfolio' | 'withdrawals' | 'history' = 'portfolio';
 
-  constructor(readonly investorContext: InvestorContextService) {}
+  constructor(readonly authService: AuthService) {}
 }
