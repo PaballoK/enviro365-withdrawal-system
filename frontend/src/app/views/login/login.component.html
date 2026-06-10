@@ -12,39 +12,52 @@
     <form [formGroup]="loginForm" (ngSubmit)="submit()">
 
       <div class="field">
-        <label class="flbl">Email</label>
+        <label for="email" class="flbl">Email</label>
         <input
+          id="email"
+          pInputText
           type="email"
           formControlName="email"
-          class="finput"
           placeholder="you@example.com"
-          autocomplete="email"/>
-        <div class="field-error"
+          autocomplete="email"
+          class="w-full"
+          [ngClass]="{'ng-invalid ng-dirty': loginForm.get('email')?.invalid && loginForm.get('email')?.touched}"/>
+        <small class="p-error"
           *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
           Enter a valid email address.
-        </div>
+        </small>
       </div>
 
       <div class="field">
-        <label class="flbl">Password</label>
-        <input
-          type="password"
+        <label for="password" class="flbl">Password</label>
+        <p-password
+          inputId="password"
           formControlName="password"
-          class="finput"
           placeholder="••••••••"
-          autocomplete="current-password"/>
-        <div class="field-error"
+          [feedback]="false"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          [ngClass]="{'ng-invalid ng-dirty': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}">
+        </p-password>
+        <small class="p-error"
           *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
           Password is required.
-        </div>
+        </small>
       </div>
 
-      <div class="alert-err" *ngIf="error">{{ error }}</div>
+      <p-message
+        *ngIf="error"
+        severity="error"
+        [text]="error!"
+        styleClass="w-full mb-3">
+      </p-message>
 
       <button
         pButton
         type="submit"
         label="Sign In"
+       
         class="login-btn"
         [loading]="isLoading"
         [disabled]="loginForm.invalid || isLoading">
