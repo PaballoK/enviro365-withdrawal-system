@@ -26,6 +26,8 @@ public class Investor {
     @Column(nullable = false)
     private String firstName;
 
+    private String password;
+
     @Email(message = "Invalid email format")
     private String email;
 
