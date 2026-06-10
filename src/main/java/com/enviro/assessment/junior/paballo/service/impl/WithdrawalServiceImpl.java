@@ -8,16 +8,12 @@ import com.enviro.assessment.junior.paballo.entity.WithdrawalNotice;
 import com.enviro.assessment.junior.paballo.enums.ProductType;
 import com.enviro.assessment.junior.paballo.exception.AgeRestrictionException;
 import com.enviro.assessment.junior.paballo.exception.InsufficientBalanceException;
-import com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException;
-import com.enviro.assessment.junior.paballo.finder.InvestorFinder;
 import com.enviro.assessment.junior.paballo.finder.ProductFinder;
-import com.enviro.assessment.junior.paballo.repository.InvestorRepository;
 import com.enviro.assessment.junior.paballo.repository.ProductRepository;
 import com.enviro.assessment.junior.paballo.repository.WithdrawalNoticeRepository;
 import com.enviro.assessment.junior.paballo.service.WithdrawalService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -38,12 +34,9 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     private static final BigDecimal MAX_WITHDRAWAL_PERCENT = new BigDecimal("0.90");
 
 
-    private final InvestorRepository investorRepository;
     private final ProductRepository productRepository;
     private final WithdrawalNoticeRepository withdrawalNoticeRepository;
-
     private final ProductFinder productFinder;
-    private final InvestorFinder investorFinder;
 
     /**
      * Processes a withdrawal by validating the investor and product, running business rule checks,
@@ -51,15 +44,12 @@ public class WithdrawalServiceImpl implements WithdrawalService {
      *
      * @param request the withdrawal request containing investor ID, product ID, and amount
      * @return a WithdrawalResponseDTO with the saved withdrawal details
-     * @throws InvestorNotFoundException if the investor does not exist
      * @throws AgeRestrictionException if a retirement product withdrawal is attempted and the investor is under 65
      * @throws InsufficientBalanceException if the requested amount is more than 90% of the product balance
      */
     @Transactional
     @Override
-    public WithdrawalResponseDTO withdraw(WithdrawalRequestDTO request) {
-
-        Investor investor = investorFinder.getInvestorByIdOrThrow(request.getInvestorId());
+    public WithdrawalResponseDTO withdraw(WithdrawalRequestDTO request, Investor investor) {
 
         Product product = productFinder.getProductByIdOrThrow(request.getProductId());
 
@@ -96,13 +86,13 @@ public class WithdrawalServiceImpl implements WithdrawalService {
      * Retrieves all withdrawal records for the given investor, ordered by most recent first.
      * Each record is mapped to a WithdrawalResponseDTO before being returned.
      *
-     * @param investorId the ID of the investor
+     * @param investor of the investor
      * @return a list of withdrawal response DTOs, or an empty list if none exist
      */
     @Override
-    public List<WithdrawalResponseDTO> getWithdrawalHistory(Long investorId) {
+    public List<WithdrawalResponseDTO> getWithdrawalHistory(Investor investor) {
 
-        return withdrawalNoticeRepository.findByInvestorIdOrderByProcessedAtDesc(investorId).stream()
+        return withdrawalNoticeRepository.findByInvestorIdOrderByProcessedAtDesc(investor.getId()).stream()
                 .map(withdrawalNotice -> WithdrawalResponseDTO.builder()
                         .id(withdrawalNotice.getId())
                         .productId(withdrawalNotice.getProduct().getId())

@@ -9,9 +9,6 @@ import java.math.BigDecimal;
 @Data
 public class WithdrawalRequestDTO {
 
-    @NotNull(message = "Investor ID is required")
-    private Long investorId;
-
     @NotNull(message = "Product ID is required")
     private Long productId;
 

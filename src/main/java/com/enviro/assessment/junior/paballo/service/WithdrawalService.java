@@ -2,6 +2,7 @@ package com.enviro.assessment.junior.paballo.service;
 
 import com.enviro.assessment.junior.paballo.dto.WithdrawalRequestDTO;
 import com.enviro.assessment.junior.paballo.dto.WithdrawalResponseDTO;
+import com.enviro.assessment.junior.paballo.entity.Investor;
 import com.enviro.assessment.junior.paballo.exception.AgeRestrictionException;
 import com.enviro.assessment.junior.paballo.exception.InsufficientBalanceException;
 import com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException;
@@ -23,7 +24,7 @@ public interface WithdrawalService {
      * @throws AgeRestrictionException if a retirement product withdrawal is attempted below age 65
      * @throws InsufficientBalanceException if the amount exceeds 90% of the product balance
      */
-    WithdrawalResponseDTO withdraw(WithdrawalRequestDTO requestDTO);
+    WithdrawalResponseDTO withdraw(WithdrawalRequestDTO requestDTO, Investor investor);
 
     /**
      * Returns all past withdrawals for the given investor, ordered by most recent first.
@@ -31,5 +32,5 @@ public interface WithdrawalService {
      * @param investorId the ID of the investor
      * @return a list of withdrawal response DTOs
      */
-    List<WithdrawalResponseDTO> getWithdrawalHistory(Long investorId);
+    List<WithdrawalResponseDTO> getWithdrawalHistory(Investor investor);
 }
