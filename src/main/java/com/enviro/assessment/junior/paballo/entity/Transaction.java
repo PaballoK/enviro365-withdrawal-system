@@ -30,6 +30,7 @@ public class Transaction {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
     private BigDecimal amount;
