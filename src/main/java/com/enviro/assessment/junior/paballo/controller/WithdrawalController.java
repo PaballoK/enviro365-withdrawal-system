@@ -74,7 +74,7 @@ public class WithdrawalController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         try {
-            byte[] csvBytes = csvExportService.exportWithdrawalHistory(investor, startDate, endDate).getBytes();
+            byte[] csvBytes = csvExportService.exportTransactionHistory(investor, startDate, endDate).getBytes();
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,

@@ -21,7 +21,7 @@ public class CsvExportServiceImpl implements CsvExportService {
     private final TransactionService transactionService;
 
     @Override
-    public String exportWithdrawalHistory(Investor investor, LocalDate startDate, LocalDate endDate) throws IOException {
+    public String exportTransactionHistory(Investor investor, LocalDate startDate, LocalDate endDate) throws IOException {
         List<TransactionResponseDTO> history = transactionService.getTransactionHistory(investor, null);
 
         if (startDate != null) {
