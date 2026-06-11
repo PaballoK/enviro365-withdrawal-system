@@ -1,23 +1,21 @@
 package com.enviro.assessment.junior.paballo.service.impl;
 
+import com.enviro.assessment.junior.paballo.dto.DepositRequestDTO;
+import com.enviro.assessment.junior.paballo.dto.TransactionResponseDTO;
 import com.enviro.assessment.junior.paballo.dto.WithdrawalRequestDTO;
-import com.enviro.assessment.junior.paballo.dto.WithdrawalResponseDTO;
 import com.enviro.assessment.junior.paballo.entity.Investor;
 import com.enviro.assessment.junior.paballo.entity.Product;
-import com.enviro.assessment.junior.paballo.entity.WithdrawalNotice;
+import com.enviro.assessment.junior.paballo.entity.Transaction;
 import com.enviro.assessment.junior.paballo.enums.ProductType;
+import com.enviro.assessment.junior.paballo.enums.TransactionType;
 import com.enviro.assessment.junior.paballo.exception.AgeRestrictionException;
 import com.enviro.assessment.junior.paballo.exception.InsufficientBalanceException;
-import com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException;
-import com.enviro.assessment.junior.paballo.finder.InvestorFinder;
-import com.enviro.assessment.junior.paballo.finder.ProductFinder;
-import com.enviro.assessment.junior.paballo.repository.InvestorRepository;
+import com.enviro.assessment.junior.paballo.exception.ProductNotFoundException;
 import com.enviro.assessment.junior.paballo.repository.ProductRepository;
-import com.enviro.assessment.junior.paballo.repository.WithdrawalNoticeRepository;
-import com.enviro.assessment.junior.paballo.service.WithdrawalService;
+import com.enviro.assessment.junior.paballo.repository.TransactionRepository;
+import com.enviro.assessment.junior.paballo.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,23 +25,19 @@ import java.time.Period;
 import java.util.List;
 
 /**
- * Implementation of {@link WithdrawalService} that handles the business logic for
- * processing withdrawals and fetching withdrawal history.
+ * Implementation of {@link TransactionService} that handles the business logic for
+ * processing deposits and withdrawals, and fetching transaction history.
  */
 @Service
 @RequiredArgsConstructor
-public class WithdrawalServiceImpl implements WithdrawalService {
+public class TransactionServiceImpl implements TransactionService {
 
     private static final int RETIREMENT_AGE = 65;
     private static final BigDecimal MAX_WITHDRAWAL_PERCENT = new BigDecimal("0.90");
 
 
-    private final InvestorRepository investorRepository;
     private final ProductRepository productRepository;
-    private final WithdrawalNoticeRepository withdrawalNoticeRepository;
-
-    private final ProductFinder productFinder;
-    private final InvestorFinder investorFinder;
+    private final TransactionRepository transactionRepository;
 
     /**
      * Processes a withdrawal by validating the investor and product, running business rule checks,
@@ -51,17 +45,15 @@ public class WithdrawalServiceImpl implements WithdrawalService {
      *
      * @param request the withdrawal request containing investor ID, product ID, and amount
      * @return a WithdrawalResponseDTO with the saved withdrawal details
-     * @throws InvestorNotFoundException if the investor does not exist
      * @throws AgeRestrictionException if a retirement product withdrawal is attempted and the investor is under 65
      * @throws InsufficientBalanceException if the requested amount is more than 90% of the product balance
      */
     @Transactional
     @Override
-    public WithdrawalResponseDTO withdraw(WithdrawalRequestDTO request) {
+    public TransactionResponseDTO withdraw(WithdrawalRequestDTO request, Investor investor) {
 
-        Investor investor = investorFinder.getInvestorByIdOrThrow(request.getInvestorId());
-
-        Product product = productFinder.getProductByIdOrThrow(request.getProductId());
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id " + request.getProductId()));
 
         validateRetirementAge(investor,product);
         validateMaxWithdrawal(product,request.getWithdrawalAmount());
@@ -71,47 +63,84 @@ public class WithdrawalServiceImpl implements WithdrawalService {
         product.setBalance(remainingBalance);
         productRepository.save(product);
 
-        WithdrawalNotice withdrawalNotice = WithdrawalNotice.builder()
+        Transaction withdrawalNotice = Transaction.builder()
                 .amount(request.getWithdrawalAmount())
                 .product(product)
                 .investor(investor)
                 .balance(remainingBalance)
+                .transactionType(TransactionType.WITHDRAW)
                 .processedAt(LocalDateTime.now())
                 .build();
 
-        WithdrawalNotice saved = withdrawalNoticeRepository.save(withdrawalNotice);
+        Transaction saved = transactionRepository.save(withdrawalNotice);
 
-        return WithdrawalResponseDTO.builder()
+        return TransactionResponseDTO.builder()
                 .amount(saved.getAmount())
                 .productName(product.getProductName())
                 .productId(product.getId())
                 .investorId(investor.getId())
                 .id(saved.getId())
                 .processedAt(saved.getProcessedAt())
-                .remainingBalance(saved.getBalance())
+                .balanceAfter(saved.getBalance())
+                .type(TransactionType.WITHDRAW)
                 .build();
     }
 
-    /**
-     * Retrieves all withdrawal records for the given investor, ordered by most recent first.
-     * Each record is mapped to a WithdrawalResponseDTO before being returned.
-     *
-     * @param investorId the ID of the investor
-     * @return a list of withdrawal response DTOs, or an empty list if none exist
-     */
+    @Transactional
     @Override
-    public List<WithdrawalResponseDTO> getWithdrawalHistory(Long investorId) {
+    public TransactionResponseDTO deposit(DepositRequestDTO request, Investor investor) {
+        
+        
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(()-> new ProductNotFoundException("Product not found with id " + request.getProductId()));
+        
+        BigDecimal newBalance = product.getBalance().add(request.getDepositAmount());
+        
+        product.setBalance(newBalance);
+        productRepository.save(product);
 
-        return withdrawalNoticeRepository.findByInvestorIdOrderByProcessedAtDesc(investorId).stream()
-                .map(withdrawalNotice -> WithdrawalResponseDTO.builder()
-                        .id(withdrawalNotice.getId())
-                        .productId(withdrawalNotice.getProduct().getId())
-                        .productName(withdrawalNotice.getProduct().getProductName())
-                        .processedAt(withdrawalNotice.getProcessedAt())
-                        .investorId(withdrawalNotice.getInvestor().getId())
-                        .amount(withdrawalNotice.getAmount())
-                        .remainingBalance(withdrawalNotice.getBalance())
-                        .build()).toList();
+        Transaction depositNotice = Transaction.builder()
+                .product(product)
+                .transactionType(TransactionType.DEPOSIT)
+                .amount(request.getDepositAmount())
+                .balance(product.getBalance())
+                .processedAt(LocalDateTime.now())
+                .investor(investor)
+                .build();
+
+        Transaction saved = transactionRepository.save(depositNotice);
+
+        return TransactionResponseDTO.builder()
+                .amount(saved.getAmount())
+                .productName(product.getProductName())
+                .productId(product.getId())
+                .investorId(investor.getId())
+                .id(saved.getId())
+                .type(TransactionType.DEPOSIT)
+                .processedAt(saved.getProcessedAt())
+                .balanceAfter(saved.getBalance())
+                .build();
+    }
+
+    @Override
+    public List<TransactionResponseDTO> getTransactionHistory(Investor investor, TransactionType type) {
+
+        List<Transaction> transactions = type == null
+                ? transactionRepository.findByInvestorIdOrderByProcessedAtDesc(investor.getId())
+                : transactionRepository.findByInvestorIdAndTransactionTypeOrderByProcessedAtDesc(investor.getId(), type);
+
+        return transactions.stream()
+                .map(t -> TransactionResponseDTO.builder()
+                        .id(t.getId())
+                        .productId(t.getProduct().getId())
+                        .productName(t.getProduct().getProductName())
+                        .processedAt(t.getProcessedAt())
+                        .investorId(t.getInvestor().getId())
+                        .amount(t.getAmount())
+                        .balanceAfter(t.getBalance())
+                        .type(t.getTransactionType())
+                        .build())
+                .toList();
     }
 
     /**

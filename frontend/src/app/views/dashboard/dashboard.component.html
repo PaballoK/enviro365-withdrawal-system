@@ -12,12 +12,6 @@
         <span class="breadcrumb-sep">/</span>
         <span class="breadcrumb-current">Portfolio</span>
       </div>
-      <div class="topbar-right">
-        <p-menu #investorMenu [model]="investorMenuItems" [popup]="true" appendTo="body"></p-menu>
-        <div (click)="investorMenu.toggle($event)" style="cursor:pointer;display:inline-flex;">
-          <p-avatar [label]="investorInitials" [style]="{'font-size': '12px'}"></p-avatar>
-        </div>
-      </div>
     </div>
 
     <div class="page">

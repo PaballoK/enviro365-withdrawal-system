@@ -1,9 +1,12 @@
 package com.enviro.assessment.junior.paballo.controller;
 
+import com.enviro.assessment.junior.paballo.annotations.CurrentUser;
+import com.enviro.assessment.junior.paballo.dto.TransactionResponseDTO;
 import com.enviro.assessment.junior.paballo.dto.WithdrawalRequestDTO;
-import com.enviro.assessment.junior.paballo.dto.WithdrawalResponseDTO;
+import com.enviro.assessment.junior.paballo.entity.Investor;
+import com.enviro.assessment.junior.paballo.enums.TransactionType;
 import com.enviro.assessment.junior.paballo.service.CsvExportService;
-import com.enviro.assessment.junior.paballo.service.WithdrawalService;
+import com.enviro.assessment.junior.paballo.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -27,7 +30,7 @@ import java.util.List;
 @RequestMapping("/api/withdrawals")
 public class WithdrawalController {
 
-    private final WithdrawalService withdrawalService;
+    private final TransactionService withdrawalService;
     private final CsvExportService csvExportService;
 
     @Operation(summary = "Submit a withdrawal", description = "Processes a withdrawal from an investor's product. " +
@@ -38,22 +41,23 @@ public class WithdrawalController {
             @ApiResponse(responseCode = "404", description = "Investor or product not found")
     })
     @PostMapping
-    public ResponseEntity<WithdrawalResponseDTO> withdraw(@Valid @RequestBody WithdrawalRequestDTO request) {
-        WithdrawalResponseDTO response = withdrawalService.withdraw(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<TransactionResponseDTO> withdraw(@Valid @RequestBody WithdrawalRequestDTO request,
+                                                          @CurrentUser Investor investor) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(withdrawalService.withdraw(request, investor));
     }
 
-    @Operation(summary = "Get withdrawal history",
-            description = "Returns all successful withdrawals for the given investor," +
-            " ordered by date descending")
+    @Operation(summary = "Get transaction history",
+            description = "Returns all transactions for the given investor, ordered by date descending. " +
+            "Optionally filter by type using the 'type' query parameter (WITHDRAW or DEPOSIT).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Withdrawal history retrieved successfully"),
+            @ApiResponse(responseCode = "200", description = "Transaction history retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Investor not found")
     })
-    @GetMapping("/investor/{investorId}")
-    public ResponseEntity<List<WithdrawalResponseDTO>> getWithdrawalHistory(@PathVariable Long investorId) {
-        List<WithdrawalResponseDTO> history = withdrawalService.getWithdrawalHistory(investorId);
-        return ResponseEntity.ok(history);
+    @GetMapping("/history")
+    public ResponseEntity<List<TransactionResponseDTO>> getTransactionHistory(
+            @CurrentUser Investor investor,
+            @RequestParam(required = false) TransactionType type) {
+        return ResponseEntity.ok(withdrawalService.getTransactionHistory(investor, type));
     }
 
     @Operation(summary = "Export withdrawal history as CSV",
@@ -64,17 +68,17 @@ public class WithdrawalController {
             @ApiResponse(responseCode = "404", description = "Investor not found"),
             @ApiResponse(responseCode = "500", description = "Failed to generate CSV")
     })
-    @GetMapping("/investor/{investorId}/export")
+    @GetMapping("/export")
     public ResponseEntity<byte[]> exportWithdrawalHistory(
-            @PathVariable Long investorId,
+            @CurrentUser Investor investor,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         try {
-            byte[] csvBytes = csvExportService.exportWithdrawalHistory(investorId, startDate, endDate).getBytes();
+            byte[] csvBytes = csvExportService.exportWithdrawalHistory(investor, startDate, endDate).getBytes();
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"investor_" + investorId + "_statement.csv\"")
+                            "attachment; filename=\"investor_" + investor.getId() + "_statement.csv\"")
                     .contentType(MediaType.parseMediaType("text/csv"))
                     .body(csvBytes);
 

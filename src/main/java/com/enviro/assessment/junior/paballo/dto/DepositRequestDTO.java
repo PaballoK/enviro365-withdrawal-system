@@ -7,12 +7,12 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class WithdrawalRequestDTO {
+public class DepositRequestDTO {
 
     @NotNull(message = "Product ID is required")
     private Long productId;
 
-    @NotNull(message = "Withdrawal amount is required")
-    @Positive(message = "Withdrawal amount must be greater than zero")
-    private BigDecimal withdrawalAmount;
+    @NotNull(message = "Deposit amount is required")
+    @Positive(message = "Deposit amount must be greater than zero")
+    private BigDecimal depositAmount;
 }

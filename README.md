@@ -1,6 +1,6 @@
 # Enviro365 Withdrawal Notice System
 
-A full-stack withdrawal management system built for the Enviro365 Investments assessment. Investors can view their portfolios, submit withdrawal notices, and download CSV statements — all enforced against real business rules.
+A full-stack investment transaction system built for the Enviro365 Investments assessment. Investors can view their portfolios, submit withdrawal notices, make deposits, and download CSV statements — all enforced against real business rules.
 
 ---
 
@@ -8,7 +8,8 @@ A full-stack withdrawal management system built for the Enviro365 Investments as
 
 | Layer | Technology |
 |---|---|
-| Backend | Java 17, Spring Boot, Spring Data JPA, Spring Validation |
+| Backend | Java 17, Spring Boot, Spring Data JPA, Spring Validation, Spring Security |
+| Auth | JWT (JJWT), BCrypt password hashing |
 | Database | H2 (in-memory) |
 | Frontend | Angular 17 (standalone components), PrimeNG, RxJS |
 | CSV Export | Apache Commons CSV |
@@ -23,25 +24,27 @@ enviro365-withdrawal-system-backend/
 ├── src/
 │   └── main/
 │       ├── java/com/enviro/assessment/junior/paballo/
-│       │   ├── config/          # CORS, ModelMapper config
+│       │   ├── annotations/     # @CurrentUser annotation + argument resolver
+│       │   ├── config/          # SecurityConfig, JwtAuthenticationFilter, WebConfig
 │       │   ├── controller/      # REST controllers + GlobalExceptionHandler
-│       │   ├── dto/             # Request/Response DTOs
-│       │   ├── entity/          # JPA entities
-│       │   ├── enums/           # ProductType enum
+│       │   ├── dto/             # Request/Response DTOs + auth DTOs
+│       │   ├── entity/          # JPA entities (Investor implements UserDetails)
+│       │   ├── enums/           # ProductType, TransactionType enums
 │       │   ├── exception/       # Custom exceptions
-│       │   ├── finder/          # Entity lookup utilities
 │       │   ├── repository/      # Spring Data repositories
-│       │   └── service/         # Business logic (interfaces + impl)
+│       │   └── service/         # Business logic + AuthenticationService + JwtService
 │       └── resources/
 │           ├── application.properties
-│           └── data.sql         # Seed data
+│           └── data.sql         # Seed data with bcrypt-hashed passwords
 └── frontend/
     └── src/app/
         ├── core/models/         # TypeScript DTOs
         ├── enums/               # ProductType enum
-        ├── services/            # HTTP services + InvestorContextService
+        ├── guards/              # AuthGuard (CanActivateFn)
+        ├── interceptors/        # JWT interceptor (HttpInterceptorFn)
+        ├── services/            # HTTP services + AuthService
         ├── shared/              # Sidebar, Loader components
-        └── views/               # Dashboard, Withdrawal, History pages
+        └── views/               # Login, Dashboard, Withdrawal, History pages
 ```
 
 ---
@@ -88,11 +91,11 @@ The UI will be available at `http://localhost:4200`.
 
 The database is seeded automatically on startup via `data.sql`.
 
-| Investor | ID | Birth Date | Age |
-|---|---|---|---|
-| Sipho Nkosi | 1 | 1955-03-15 | 70 (eligible for retirement withdrawal) |
-| Thandi Mokoena | 2 | 1985-07-22 | 40 (not eligible) |
-| Pieter van der Merwe | 3 | 1960-11-08 | 65 (eligible) |
+| Investor | Email | Password | Birth Date | Retirement Eligible |
+|---|---|---|---|---|
+| Sipho Nkosi | sipho.nkosi@gmail.com | password123 | 1955-03-15 | Yes (age 70) |
+| Thandi Mokoena | thandi.mokoena@gmail.com | password123 | 1985-07-22 | No (age 40) |
+| Pieter van der Merwe | pieter.vdm@gmail.com | password123 | 1960-11-08 | Yes (age 65) |
 
 | Product | ID | Type | Balance | Investor |
 |---|---|---|---|---|
@@ -120,16 +123,40 @@ All error responses follow this structure:
 }
 ```
 
+Protected endpoints require a `Bearer` token in the `Authorization` header:
+```
+Authorization: Bearer <jwt-token>
+```
+
 ---
 
-### GET `/api/portfolio/{investorId}`
+### POST `/api/auth/login` — Public
 
-Retrieves an investor's portfolio including all products and total value.
+Authenticates an investor and returns a JWT.
 
-**Example request:**
+**Request body:**
+```json
+{
+  "email": "sipho.nkosi@gmail.com",
+  "password": "password123"
+}
 ```
-GET /api/portfolio/1
+
+**Example response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9..."
+}
 ```
+
+**Error responses:**
+- `401 Unauthorized` — invalid email or password
+
+---
+
+### GET `/api/portfolio` — Protected
+
+Returns the authenticated investor's portfolio including all products and total value. Investor identity is resolved from the JWT — no ID in the URL.
 
 **Example response (200 OK):**
 ```json
@@ -157,18 +184,17 @@ GET /api/portfolio/1
 ```
 
 **Error responses:**
-- `404 Not Found` — investor does not exist
+- `401 Unauthorized` — missing or invalid token
 
 ---
 
-### POST `/api/withdrawals`
+### POST `/api/withdrawals` — Protected
 
-Submits a withdrawal notice against a product. Enforces business rules before processing.
+Submits a withdrawal notice against a product. The investor is taken from the JWT, not the request body.
 
 **Request body:**
 ```json
 {
-  "investorId": 1,
   "productId": 1,
   "withdrawalAmount": 50000.00
 }
@@ -181,8 +207,9 @@ Submits a withdrawal notice against a product. Enforces business rules before pr
   "investorId": 1,
   "productId": 1,
   "productName": "Sipho Retirement Annuity - Old Mutual",
+  "type": "WITHDRAWAL",
   "amount": 50000.00,
-  "remainingBalance": 800000.00,
+  "balanceAfter": 800000.00,
   "processedAt": "2026-06-08T10:30:00"
 }
 ```
@@ -190,17 +217,25 @@ Submits a withdrawal notice against a product. Enforces business rules before pr
 **Error responses:**
 - `400 Bad Request` — amount exceeds 90% of balance, or investor is under 65 for a retirement product
 - `400 Bad Request` — missing or invalid request fields
-- `404 Not Found` — investor or product does not exist
+- `401 Unauthorized` — missing or invalid token
+- `404 Not Found` — product does not exist
 
 ---
 
-### GET `/api/withdrawals/investor/{investorId}`
+### GET `/api/withdrawals/history` — Protected
 
-Returns the full withdrawal history for an investor, ordered most recent first.
+Returns the authenticated investor's full transaction history, ordered most recent first. Optionally filter by transaction type.
 
-**Example request:**
+**Query parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `type` | `WITHDRAWAL` \| `DEPOSIT` | No | Filter by transaction type; omit for all |
+
+**Example requests:**
 ```
-GET /api/withdrawals/investor/1
+GET /api/withdrawals/history
+GET /api/withdrawals/history?type=WITHDRAWAL
 ```
 
 **Example response (200 OK):**
@@ -211,8 +246,9 @@ GET /api/withdrawals/investor/1
     "investorId": 1,
     "productId": 1,
     "productName": "Sipho Retirement Annuity - Old Mutual",
+    "type": "WITHDRAWAL",
     "amount": 50000.00,
-    "remainingBalance": 800000.00,
+    "balanceAfter": 800000.00,
     "processedAt": "2026-06-08T10:30:00"
   }
 ]
@@ -220,9 +256,9 @@ GET /api/withdrawals/investor/1
 
 ---
 
-### GET `/api/withdrawals/investor/{investorId}/export`
+### GET `/api/withdrawals/export` — Protected
 
-Exports withdrawal history as a downloadable CSV file. Supports optional date range filtering.
+Exports the authenticated investor's withdrawal history as a downloadable CSV file. Supports optional date range filtering.
 
 **Query parameters:**
 
@@ -233,11 +269,11 @@ Exports withdrawal history as a downloadable CSV file. Supports optional date ra
 
 **Example requests:**
 ```
-GET /api/withdrawals/investor/1/export
-GET /api/withdrawals/investor/1/export?startDate=2026-01-01&endDate=2026-06-30
+GET /api/withdrawals/export
+GET /api/withdrawals/export?startDate=2026-01-01&endDate=2026-06-30
 ```
 
-**Response:** A CSV file download with columns: ID, Investor ID, Product ID, Product Name, Amount, Remaining Balance, Processed At.
+**Response:** A CSV file download with columns: ID, Investor ID, Product ID, Product Name, Amount, Balance After, Processed At.
 
 ---
 
@@ -245,18 +281,22 @@ GET /api/withdrawals/investor/1/export?startDate=2026-01-01&endDate=2026-06-30
 
 | Rule | Implementation |
 |---|---|
-| Retirement withdrawals only allowed if investor is 65 or older | `WithdrawalServiceImpl.validateRetirementAge()` using `Period.between()` |
-| Withdrawal amount cannot exceed 90% of the product balance | `WithdrawalServiceImpl.validateMaxWithdrawal()` |
+| Retirement withdrawals only allowed if investor is 65 or older | `TransactionServiceImpl.validateRetirementAge()` using `Period.between()` |
+| Withdrawal amount cannot exceed 90% of the product balance | `TransactionServiceImpl.validateMaxWithdrawal()` |
 | Proper error responses returned for all rule violations | `GlobalExceptionHandler` with `@ControllerAdvice` |
 
 ---
 
 ## Advanced Features Implemented
 
-- **Global exception handling** — `@ControllerAdvice` with handlers for business exceptions, validation errors, and unexpected errors; all return a consistent `ApiErrorResponse` structure
-- **DTO layer** — `WithdrawalRequestDTO`, `WithdrawalResponseDTO`, `InvestorPortfolioDTO`, `ProductDTO`, `ApiErrorResponse` separate the API contract from the domain model
+- **Spring Security + JWT** — stateless authentication via JJWT; `JwtAuthenticationFilter` validates the Bearer token on every request and populates the `SecurityContext`
+- **`@CurrentUser` annotation** — custom `HandlerMethodArgumentResolver` injects the authenticated `Investor` directly into controller method parameters, keeping controllers free of `SecurityContextHolder` calls
+- **BCrypt password hashing** — passwords stored as bcrypt hashes; `BCryptPasswordEncoder` used for both storage and verification
+- **Global exception handling** — `@ControllerAdvice` with handlers for business exceptions, validation errors, `ResponseStatusException`, and unexpected errors; all return a consistent `ApiErrorResponse` structure
+- **DTO layer** — `WithdrawalRequestDTO`, `DepositRequestDTO`, `TransactionResponseDTO`, `InvestorPortfolioDTO`, `ProductDTO`, `ApiErrorResponse` separate the API contract from the domain model
 - **Input validation** — `@Valid` + `@NotNull`, `@Positive` on request DTOs; `MethodArgumentNotValidException` handler returns field-level error messages
 - **UI validation** — Angular reactive form enforces required fields, minimum amount, and the 90% cap client-side before the request is sent; live max-allowed hint shown to the user
+- **Angular auth integration** — `AuthGuard` (functional `CanActivateFn`) protects all routes; `jwtInterceptor` (`HttpInterceptorFn`) automatically attaches the Bearer token to every outbound request
 
 ---
 
@@ -269,8 +309,9 @@ AI was used for:
 - Suggesting the `GlobalExceptionHandler` pattern and `@ControllerAdvice` structure
 - Angular component templates and PrimeNG integration
 - Identifying and fixing a `ProductType` enum mismatch between the backend `@JsonValue` serialisation and the frontend TypeScript enum
+- Implementing the Spring Security + JWT layer: `SecurityConfig`, `JwtAuthenticationFilter`, `JwtService`, `@CurrentUser` annotation + resolver, and the Angular `AuthGuard` / `jwtInterceptor`
 
-All AI-generated code was reviewed, understood, and validated by the author before inclusion. The business logic (age validation, 90% cap, CSV filtering), architecture decisions (Finder pattern, `InvestorContextService` with `BehaviorSubject`), and overall system design are the author's own.
+All AI-generated code was reviewed, understood, and validated by me before inclusion. The business logic (age validation, 90% cap, CSV filtering), architecture decisions, and overall system design are my own.
 
 ---
 
@@ -283,6 +324,3 @@ All AI-generated code was reviewed, understood, and validated by the author befo
 <img width="1440" height="900" alt="Screenshot 2026-06-09 at 16 43 03" src="https://github.com/user-attachments/assets/9b36f739-e219-4db9-88c7-a1c2ae9681eb" />
 
 <img width="1440" height="900" alt="Screenshot 2026-06-09 at 16 43 42" src="https://github.com/user-attachments/assets/73c18d5f-aba4-44c6-aec7-4b802afe7361" />
-
-
-

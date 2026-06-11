@@ -1,6 +1,7 @@
 package com.enviro.assessment.junior.paballo.service;
 
 import com.enviro.assessment.junior.paballo.dto.InvestorPortfolioDTO;
+import com.enviro.assessment.junior.paballo.entity.Investor;
 
 /**
  * Service interface for investor-related operations.
@@ -10,9 +11,8 @@ public interface InvestorService {
     /**
      * Retrieves the portfolio for the given investor, including all their products and total value.
      *
-     * @param investorId the ID of the investor
+     * @param investor the authenticated investor resolved from the JWT
      * @return the investor's portfolio as a DTO
-     * @throws com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException if no investor exists with the given ID
      */
-    InvestorPortfolioDTO getPortfolio(Long investorId);
+    InvestorPortfolioDTO getPortfolio(Investor investor);
 }

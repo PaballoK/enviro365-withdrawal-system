@@ -12,8 +12,7 @@ export class InvestorService {
 
   constructor(private http: HttpClient) { }
 
-  getPortfolio(investorId: number): Observable<InvestorPortfolioDTO> {
-    return this.http.get<InvestorPortfolioDTO>(`${this.baseUrl}/${investorId}`);
+  getPortfolio(): Observable<InvestorPortfolioDTO> {
+    return this.http.get<InvestorPortfolioDTO>(this.baseUrl);
   }
-  
 }

@@ -13,16 +13,18 @@
     <div class="nav-label">Main</div>
     <button pButton text [class.active]="activeItem === 'portfolio'" class="nav-item" icon="pi pi-th-large" label="Portfolio" routerLink="/dashboard"></button>
     <button pButton text [class.active]="activeItem === 'withdrawals'" class="nav-item" icon="pi pi-arrow-down" label="Withdrawals" routerLink="/withdrawal"></button>
-    <button pButton text [class.active]="activeItem === 'history'" class="nav-item" icon="pi pi-file" label="History" [routerLink]="['/history', investorContext.currentInvestorId]"></button>
+    <button pButton text [class.active]="activeItem === 'deposits'" class="nav-item" icon="pi pi-arrow-up" label="Deposits" routerLink="/deposit"></button>
+    <button pButton text [class.active]="activeItem === 'history'" class="nav-item" icon="pi pi-file" label="History" routerLink="/history"></button>
   </div>
 
   <div class="sidebar-bottom">
     <div class="user-row">
-      <div class="user-av">PK</div>
-      <div>
-        <div class="user-name">Paballo Kunutu</div>
-        <div class="user-role">Junior Developer</div>
+      <div class="user-av">{{ (authService.getEmail() || '?')[0].toUpperCase() }}</div>
+      <div class="user-info">
+        <div class="user-name">{{ authService.getEmail() }}</div>
+        <div class="user-role">Investor</div>
       </div>
     </div>
+    <button pButton text class="logout-btn" icon="pi pi-sign-out" label="Sign out" (click)="authService.logout()"></button>
   </div>
 </aside>

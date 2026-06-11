@@ -1,5 +1,6 @@
 package com.enviro.assessment.junior.paballo.entity;
 
+import com.enviro.assessment.junior.paballo.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "withdrawals")
-public class WithdrawalNotice {
+public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +30,10 @@ public class WithdrawalNotice {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    private TransactionType transactionType;
+
     private BigDecimal amount;
     private BigDecimal balance;
     private LocalDateTime processedAt;
+
 }
