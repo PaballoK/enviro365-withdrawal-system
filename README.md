@@ -1,6 +1,6 @@
 # Enviro365 Withdrawal Notice System
 
-A full-stack withdrawal management system built for the Enviro365 Investments assessment. Investors can view their portfolios, submit withdrawal notices, and download CSV statements — all enforced against real business rules.
+A full-stack investment transaction system built for the Enviro365 Investments assessment. Investors can view their portfolios, submit withdrawal notices, make deposits, and download CSV statements — all enforced against real business rules.
 
 ---
 
@@ -29,9 +29,8 @@ enviro365-withdrawal-system-backend/
 │       │   ├── controller/      # REST controllers + GlobalExceptionHandler
 │       │   ├── dto/             # Request/Response DTOs + auth DTOs
 │       │   ├── entity/          # JPA entities (Investor implements UserDetails)
-│       │   ├── enums/           # ProductType enum
+│       │   ├── enums/           # ProductType, TransactionType enums
 │       │   ├── exception/       # Custom exceptions
-│       │   ├── finder/          # Entity lookup utilities
 │       │   ├── repository/      # Spring Data repositories
 │       │   └── service/         # Business logic + AuthenticationService + JwtService
 │       └── resources/
@@ -208,8 +207,9 @@ Submits a withdrawal notice against a product. The investor is taken from the JW
   "investorId": 1,
   "productId": 1,
   "productName": "Sipho Retirement Annuity - Old Mutual",
+  "type": "WITHDRAWAL",
   "amount": 50000.00,
-  "remainingBalance": 800000.00,
+  "balanceAfter": 800000.00,
   "processedAt": "2026-06-08T10:30:00"
 }
 ```
@@ -224,7 +224,19 @@ Submits a withdrawal notice against a product. The investor is taken from the JW
 
 ### GET `/api/withdrawals/history` — Protected
 
-Returns the authenticated investor's full withdrawal history, ordered most recent first.
+Returns the authenticated investor's full transaction history, ordered most recent first. Optionally filter by transaction type.
+
+**Query parameters:**
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `type` | `WITHDRAWAL` \| `DEPOSIT` | No | Filter by transaction type; omit for all |
+
+**Example requests:**
+```
+GET /api/withdrawals/history
+GET /api/withdrawals/history?type=WITHDRAWAL
+```
 
 **Example response (200 OK):**
 ```json
@@ -234,8 +246,9 @@ Returns the authenticated investor's full withdrawal history, ordered most recen
     "investorId": 1,
     "productId": 1,
     "productName": "Sipho Retirement Annuity - Old Mutual",
+    "type": "WITHDRAWAL",
     "amount": 50000.00,
-    "remainingBalance": 800000.00,
+    "balanceAfter": 800000.00,
     "processedAt": "2026-06-08T10:30:00"
   }
 ]
@@ -260,7 +273,7 @@ GET /api/withdrawals/export
 GET /api/withdrawals/export?startDate=2026-01-01&endDate=2026-06-30
 ```
 
-**Response:** A CSV file download with columns: ID, Investor ID, Product ID, Product Name, Amount, Remaining Balance, Processed At.
+**Response:** A CSV file download with columns: ID, Investor ID, Product ID, Product Name, Amount, Balance After, Processed At.
 
 ---
 
@@ -268,8 +281,8 @@ GET /api/withdrawals/export?startDate=2026-01-01&endDate=2026-06-30
 
 | Rule | Implementation |
 |---|---|
-| Retirement withdrawals only allowed if investor is 65 or older | `WithdrawalServiceImpl.validateRetirementAge()` using `Period.between()` |
-| Withdrawal amount cannot exceed 90% of the product balance | `WithdrawalServiceImpl.validateMaxWithdrawal()` |
+| Retirement withdrawals only allowed if investor is 65 or older | `TransactionServiceImpl.validateRetirementAge()` using `Period.between()` |
+| Withdrawal amount cannot exceed 90% of the product balance | `TransactionServiceImpl.validateMaxWithdrawal()` |
 | Proper error responses returned for all rule violations | `GlobalExceptionHandler` with `@ControllerAdvice` |
 
 ---
@@ -279,8 +292,8 @@ GET /api/withdrawals/export?startDate=2026-01-01&endDate=2026-06-30
 - **Spring Security + JWT** — stateless authentication via JJWT; `JwtAuthenticationFilter` validates the Bearer token on every request and populates the `SecurityContext`
 - **`@CurrentUser` annotation** — custom `HandlerMethodArgumentResolver` injects the authenticated `Investor` directly into controller method parameters, keeping controllers free of `SecurityContextHolder` calls
 - **BCrypt password hashing** — passwords stored as bcrypt hashes; `BCryptPasswordEncoder` used for both storage and verification
-- **Global exception handling** — `@ControllerAdvice` with handlers for business exceptions, validation errors, and unexpected errors; all return a consistent `ApiErrorResponse` structure
-- **DTO layer** — `WithdrawalRequestDTO`, `WithdrawalResponseDTO`, `InvestorPortfolioDTO`, `ProductDTO`, `ApiErrorResponse` separate the API contract from the domain model
+- **Global exception handling** — `@ControllerAdvice` with handlers for business exceptions, validation errors, `ResponseStatusException`, and unexpected errors; all return a consistent `ApiErrorResponse` structure
+- **DTO layer** — `WithdrawalRequestDTO`, `DepositRequestDTO`, `TransactionResponseDTO`, `InvestorPortfolioDTO`, `ProductDTO`, `ApiErrorResponse` separate the API contract from the domain model
 - **Input validation** — `@Valid` + `@NotNull`, `@Positive` on request DTOs; `MethodArgumentNotValidException` handler returns field-level error messages
 - **UI validation** — Angular reactive form enforces required fields, minimum amount, and the 90% cap client-side before the request is sent; live max-allowed hint shown to the user
 - **Angular auth integration** — `AuthGuard` (functional `CanActivateFn`) protects all routes; `jwtInterceptor` (`HttpInterceptorFn`) automatically attaches the Bearer token to every outbound request
@@ -298,7 +311,7 @@ AI was used for:
 - Identifying and fixing a `ProductType` enum mismatch between the backend `@JsonValue` serialisation and the frontend TypeScript enum
 - Implementing the Spring Security + JWT layer: `SecurityConfig`, `JwtAuthenticationFilter`, `JwtService`, `@CurrentUser` annotation + resolver, and the Angular `AuthGuard` / `jwtInterceptor`
 
-All AI-generated code was reviewed, understood, and validated by the author before inclusion. The business logic (age validation, 90% cap, CSV filtering), architecture decisions (Finder pattern, `@CurrentUser` resolver), and overall system design are the author's own.
+All AI-generated code was reviewed, understood, and validated by me before inclusion. The business logic (age validation, 90% cap, CSV filtering), architecture decisions, and overall system design are my own.
 
 ---
 
@@ -311,6 +324,3 @@ All AI-generated code was reviewed, understood, and validated by the author befo
 <img width="1440" height="900" alt="Screenshot 2026-06-09 at 16 43 03" src="https://github.com/user-attachments/assets/9b36f739-e219-4db9-88c7-a1c2ae9681eb" />
 
 <img width="1440" height="900" alt="Screenshot 2026-06-09 at 16 43 42" src="https://github.com/user-attachments/assets/73c18d5f-aba4-44c6-aec7-4b802afe7361" />
-
-
-
