@@ -9,24 +9,33 @@
         <span class="breadcrumb-sep">/</span>
         <span class="breadcrumb-current">History</span>
       </div>
-      <div class="topbar-right">
-     
-        <button class="btn btn-accent" routerLink="/withdrawal">+ New Withdrawal</button>
-      </div>
+   
     </div>
 
     <div class="page">
 
       <div class="page-header">
         <div>
-          <div class="page-heading">Withdrawal History</div>
-          <div class="page-sub">All processed withdrawal notices across investors.</div>
+          <div class="page-heading">Transaction History</div>
+          <div class="page-sub">All processed deposits and withdrawals.</div>
         </div>
       </div>
 
       <!-- Filter bar -->
       <div class="filter-card">
         <div class="filter-left">
+          <div class="filter-field">
+            <span class="filter-lbl">Type</span>
+            <p-dropdown
+              [options]="typeOptions"
+              [(ngModel)]="selectedType"
+              (ngModelChange)="onTypeChange()"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="filter-dropdown">
+            </p-dropdown>
+          </div>
+          <div class="filter-divider"></div>
           <div class="filter-field">
             <span class="filter-lbl">From</span>
             <p-calendar [(ngModel)]="fromDate" (ngModelChange)="applyDateFilter()"
@@ -71,8 +80,9 @@
             <tr>
               <th pSortableColumn="id">Ref <p-sortIcon field="id"></p-sortIcon></th>
               <th pSortableColumn="productName">Product <p-sortIcon field="productName"></p-sortIcon></th>
+              <th pSortableColumn="type">Type <p-sortIcon field="type"></p-sortIcon></th>
               <th pSortableColumn="amount" style="text-align:right">Amount <p-sortIcon field="amount"></p-sortIcon></th>
-              <th pSortableColumn="remainingBalance" style="text-align:right">Remaining Balance <p-sortIcon field="remainingBalance"></p-sortIcon></th>
+              <th pSortableColumn="balanceAfter" style="text-align:right">Balance After <p-sortIcon field="balanceAfter"></p-sortIcon></th>
               <th pSortableColumn="processedAt">Date Processed <p-sortIcon field="processedAt"></p-sortIcon></th>
             </tr>
           </ng-template>
@@ -81,11 +91,16 @@
             <tr>
               <td><span class="ref-badge">#{{ record.id }}</span></td>
               <td><span class="product-name">{{ record.productName }}</span></td>
+              <td>
+                <span [class]="record.type === 'DEPOSIT' ? 'type-badge deposit' : 'type-badge withdraw'">
+                  {{ record.type === 'DEPOSIT' ? 'Deposit' : 'Withdrawal' }}
+                </span>
+              </td>
               <td style="text-align:right">
                 <span class="amount">{{ formatCurrency(record.amount) }}</span>
               </td>
               <td style="text-align:right">
-                <span class="balance">{{ formatCurrency(record.remainingBalance) }}</span>
+                <span class="balance">{{ formatCurrency(record.balanceAfter) }}</span>
               </td>
               <td>
                 <div class="date-cell">
@@ -98,10 +113,10 @@
 
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="5">
+              <td colspan="6">
                 <div class="empty-state">
                   <i class="pi pi-inbox empty-icon"></i>
-                  <span>No withdrawal records found.</span>
+                  <span>No transaction records found.</span>
                 </div>
               </td>
             </tr>

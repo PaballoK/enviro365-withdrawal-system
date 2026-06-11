@@ -1,30 +1,30 @@
 <div class="layout">
 
-  <app-sidebar activeItem="withdrawals"></app-sidebar>
+  <app-sidebar activeItem="deposits"></app-sidebar>
 
   <div class="main">
 
     <div class="topbar">
       <div class="topbar-left">
         <span class="breadcrumb-sep">/</span>
-        <span class="breadcrumb-current">Withdrawals</span>
+        <span class="breadcrumb-current">Deposits</span>
       </div>
     </div>
 
     <div class="page">
 
       <div class="page-header">
-        <div class="page-heading">New Withdrawal</div>
-        <div class="page-sub">Submit a withdrawal notice against an investor product.</div>
+        <div class="page-heading">New Deposit</div>
+        <div class="page-sub">Add funds to an investor product account.</div>
       </div>
 
       <div class="two-col">
 
         <div class="fcard">
-          <div class="fcard-title">Withdrawal Request</div>
+          <div class="fcard-title">Deposit Request</div>
           <div class="fcard-sub">{{ investorName }} — choose a product and enter the amount.</div>
 
-          <form [formGroup]="withdrawalForm" (ngSubmit)="submitWithdrawal()">
+          <form [formGroup]="depositForm" (ngSubmit)="submitDeposit()">
 
             <div class="field">
               <label class="flbl">Product</label>
@@ -52,10 +52,10 @@
             </div>
 
             <div class="field">
-              <label class="flbl">Withdrawal Amount</label>
+              <label class="flbl">Deposit Amount</label>
               <div class="amt-wrap">
                 <p-inputNumber
-                  formControlName="withdrawalAmount"
+                  formControlName="depositAmount"
                   placeholder="0.00"
                   mode="currency"
                   currency="ZAR"
@@ -66,15 +66,12 @@
                   [inputStyle]="{'width':'100%'}">
                 </p-inputNumber>
               </div>
-              <div class="amt-hint" *ngIf="selectedProduct">
-                Max allowed (90% cap): <strong>{{ maxAllowed | currency:'ZAR':'symbol-narrow':'1.2-2' }}</strong>
-              </div>
             </div>
 
             <button
               pButton
               type="submit"
-              label="Submit Withdrawal Request"
+              label="Submit Deposit"
               class="submit-btn"
               [disabled]="!isFormValid || isSubmitting"
               [loading]="isSubmitting">
@@ -83,16 +80,16 @@
           </form>
 
           <div class="alert alert-ok" *ngIf="successResponse">
-            <div class="alert-ttl"><i class="pi pi-check-circle"></i> Withdrawal Processed</div>
+            <div class="alert-ttl"><i class="pi pi-check-circle"></i> Deposit Processed</div>
             <table class="dtable">
               <tr><td>Product</td><td>{{ successResponse.productName }}</td></tr>
-              <tr><td>Amount withdrawn</td><td>{{ successResponse.amount | currency:'ZAR':'symbol-narrow':'1.2-2' }}</td></tr>
-              <tr><td>Remaining balance</td><td>{{ successResponse.balanceAfter | currency:'ZAR':'symbol-narrow':'1.2-2' }}</td></tr>
+              <tr><td>Amount deposited</td><td>{{ successResponse.amount | currency:'ZAR':'symbol-narrow':'1.2-2' }}</td></tr>
+              <tr><td>New balance</td><td>{{ successResponse.balanceAfter | currency:'ZAR':'symbol-narrow':'1.2-2' }}</td></tr>
             </table>
           </div>
 
           <div class="alert alert-err" *ngIf="submitError">
-            <div class="alert-ttl"><i class="pi pi-times-circle"></i> Withdrawal Failed</div>
+            <div class="alert-ttl"><i class="pi pi-times-circle"></i> Deposit Failed</div>
             <div class="alert-msg">{{ submitError }}</div>
           </div>
 

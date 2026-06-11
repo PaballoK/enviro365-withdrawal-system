@@ -11,7 +11,7 @@ import { AuthService } from '../../services/AuthService/auth.service';
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
-  @Input() activeItem: 'portfolio' | 'withdrawals' | 'history' = 'portfolio';
+  @Input() activeItem: 'portfolio' | 'withdrawals' | 'deposits' | 'history' = 'portfolio';
 
   constructor(readonly authService: AuthService) {}
 }

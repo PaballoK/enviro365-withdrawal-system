@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterLink, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
@@ -13,18 +13,18 @@ import { ProductDTO } from '../../core/models/ProductDTO';
 import { TransactionResponseDTO } from '../../core/models/TransactionResponseDTO';
 
 @Component({
-  selector: 'app-withdrawal',
+  selector: 'app-deposit',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputNumberModule, DropdownModule, RouterModule, RouterLink, SidebarComponent],
-  templateUrl: './withdrawal.component.html',
-  styleUrl: './withdrawal.component.css'
+  templateUrl: './deposit.component.html',
+  styleUrl: './deposit.component.css'
 })
-export class WithdrawalComponent implements OnInit {
+export class DepositComponent implements OnInit {
 
   portfolio: InvestorPortfolioDTO | null = null;
   products: ProductDTO[] = [];
 
-  withdrawalForm!: FormGroup;
+  depositForm!: FormGroup;
 
   isLoadingProducts = false;
   isSubmitting = false;
@@ -35,35 +35,29 @@ export class WithdrawalComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private investorService: InvestorService,
-    private withdrawalService: WithdrawalService,
-    private route: ActivatedRoute
+    private withdrawalService: WithdrawalService
   ) {
-    this.withdrawalForm = this.formBuilder.group({
+    this.depositForm = this.formBuilder.group({
       product: [null, Validators.required],
-      withdrawalAmount: [null, [Validators.required, Validators.min(0.01)]]
+      depositAmount: [null, [Validators.required, Validators.min(0.01)]]
     });
   }
 
   ngOnInit(): void {
-    const productId = this.route.snapshot.queryParams['productId'];
-    this.loadPortfolio(productId ? +productId : null);
+    this.loadPortfolio();
   }
 
-  private loadPortfolio(preSelectProductId?: number | null): void {
+  private loadPortfolio(): void {
     this.isLoadingProducts = true;
     this.loadError = null;
     this.successResponse = null;
     this.submitError = null;
-    this.withdrawalForm.reset();
+    this.depositForm.reset();
 
     this.investorService.getPortfolio().subscribe({
       next: (portfolio) => {
         this.portfolio = portfolio;
         this.products = portfolio.products;
-        if (preSelectProductId) {
-          const preSelected = this.products.find(p => p.id === preSelectProductId) ?? null;
-          this.withdrawalForm.patchValue({ product: preSelected });
-        }
         this.isLoadingProducts = false;
       },
       error: (err) => {
@@ -73,49 +67,40 @@ export class WithdrawalComponent implements OnInit {
     });
   }
 
-  get selectedProduct(): ProductDTO | null {
-    return this.withdrawalForm?.get('product')?.value ?? null;
-  }
-
-  get maxAllowed(): number {
-    if (!this.selectedProduct) return 0;
-    return this.selectedProduct.balance * 0.9;
+  get investorName(): string {
+    if (!this.portfolio) return '';
+    return `${this.portfolio.firstName} ${this.portfolio.lastName}`;
   }
 
   get isFormValid(): boolean {
-    const amount = this.withdrawalForm.get('withdrawalAmount')?.value;
-    return this.withdrawalForm.valid && !!amount && amount <= this.maxAllowed;
+    const amount = this.depositForm.get('depositAmount')?.value;
+    return this.depositForm.valid && !!amount && amount > 0;
   }
 
-  submitWithdrawal(): void {
+  submitDeposit(): void {
     if (!this.isFormValid) return;
 
     this.isSubmitting = true;
     this.submitError = null;
     this.successResponse = null;
 
-    const { product, withdrawalAmount } = this.withdrawalForm.value;
+    const { product, depositAmount } = this.depositForm.value;
 
-    this.withdrawalService.withdraw({
+    this.withdrawalService.deposit({
       productId: product.id,
-      withdrawalAmount
+      depositAmount
     }).subscribe({
       next: (response) => {
         this.successResponse = response;
         const p = this.products.find(p => p.id === response.productId);
         if (p) p.balance = response.balanceAfter;
-        this.withdrawalForm.reset();
+        this.depositForm.reset();
         this.isSubmitting = false;
       },
       error: (err) => {
-        this.submitError = err.error?.message ?? 'Withdrawal failed. Please try again.';
+        this.submitError = err.error?.message ?? 'Deposit failed. Please try again.';
         this.isSubmitting = false;
       }
     });
-  }
-
-  get investorName(): string {
-    if (!this.portfolio) return '';
-    return `${this.portfolio.firstName} ${this.portfolio.lastName}`;
   }
 }

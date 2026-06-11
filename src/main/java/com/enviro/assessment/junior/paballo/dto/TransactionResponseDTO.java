@@ -1,11 +1,12 @@
 package com.enviro.assessment.junior.paballo.dto;
 
+import com.enviro.assessment.junior.paballo.enums.TransactionType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,14 +14,16 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class WithdrawalResponseDTO {
+public class TransactionResponseDTO {
 
     private Long id;
     private Long investorId;
     private Long productId;
     private String productName;
+    private TransactionType type;
     private BigDecimal amount;
-    private BigDecimal remainingBalance;
+    private BigDecimal balanceAfter;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime processedAt;
 }
+

@@ -1,9 +1,9 @@
 package com.enviro.assessment.junior.paballo.service.impl;
 
-import com.enviro.assessment.junior.paballo.dto.WithdrawalResponseDTO;
+import com.enviro.assessment.junior.paballo.dto.TransactionResponseDTO;
 import com.enviro.assessment.junior.paballo.entity.Investor;
 import com.enviro.assessment.junior.paballo.service.CsvExportService;
-import com.enviro.assessment.junior.paballo.service.WithdrawalService;
+import com.enviro.assessment.junior.paballo.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -18,11 +18,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CsvExportServiceImpl implements CsvExportService {
 
-    private final WithdrawalService withdrawalService;
+    private final TransactionService transactionService;
 
     @Override
     public String exportWithdrawalHistory(Investor investor, LocalDate startDate, LocalDate endDate) throws IOException {
-        List<WithdrawalResponseDTO> history = withdrawalService.getWithdrawalHistory(investor);
+        List<TransactionResponseDTO> history = transactionService.getTransactionHistory(investor, null);
 
         if (startDate != null) {
             history = history.stream()
@@ -37,18 +37,19 @@ public class CsvExportServiceImpl implements CsvExportService {
 
         StringWriter writer = new StringWriter();
         CSVFormat format = CSVFormat.DEFAULT.builder()
-                .setHeader("ID", "Investor ID", "Product ID", "Product Name", "Amount", "Remaining Balance", "Processed At")
+                .setHeader("ID", "Investor ID", "Product ID", "Product Name", "Type", "Amount", "Balance After", "Processed At")
                 .build();
 
         try (CSVPrinter printer = new CSVPrinter(writer, format)) {
-            for (WithdrawalResponseDTO w : history) {
+            for (TransactionResponseDTO w : history) {
                 printer.printRecord(
                         w.getId(),
                         w.getInvestorId(),
                         w.getProductId(),
                         w.getProductName(),
+                        w.getType(),
                         w.getAmount(),
-                        w.getRemainingBalance(),
+                        w.getBalanceAfter(),
                         w.getProcessedAt()
                 );
             }

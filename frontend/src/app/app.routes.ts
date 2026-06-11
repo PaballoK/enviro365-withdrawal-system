@@ -23,6 +23,12 @@ export const routes: Routes = [
       import('./views/withdrawal/withdrawal.component').then((m) => m.WithdrawalComponent),
   },
   {
+    path: 'deposit',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./views/deposit/deposit.component').then((m) => m.DepositComponent),
+  },
+  {
     path: 'history',
     canActivate: [authGuard],
     loadComponent: () =>

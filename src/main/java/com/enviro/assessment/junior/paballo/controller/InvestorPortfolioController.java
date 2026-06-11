@@ -30,6 +30,6 @@ public class InvestorPortfolioController {
     })
     @GetMapping
     public ResponseEntity<InvestorPortfolioDTO> getPortfolio(@CurrentUser Investor investor) {
-        return ResponseEntity.ok(investorService.getPortfolio(investor.getId()));
+        return ResponseEntity.ok(investorService.getPortfolio(investor));
     }
 }

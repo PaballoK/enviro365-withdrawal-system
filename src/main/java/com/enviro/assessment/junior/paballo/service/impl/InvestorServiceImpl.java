@@ -4,7 +4,6 @@ import com.enviro.assessment.junior.paballo.dto.InvestorPortfolioDTO;
 import com.enviro.assessment.junior.paballo.dto.ProductDTO;
 import com.enviro.assessment.junior.paballo.entity.Investor;
 import com.enviro.assessment.junior.paballo.exception.InvestorNotFoundException;
-import com.enviro.assessment.junior.paballo.finder.InvestorFinder;
 import com.enviro.assessment.junior.paballo.repository.InvestorRepository;
 import com.enviro.assessment.junior.paballo.service.InvestorService;
 import lombok.RequiredArgsConstructor;
@@ -24,22 +23,19 @@ public class InvestorServiceImpl implements InvestorService {
     private final InvestorRepository investorRepository;
     private final ModelMapper modelMapper;
 
-    private final InvestorFinder investorFinder;
-
     /**
-     * Fetches the investor by their ID, maps their products to DTOs, and calculates the total portfolio value
-     * by adding the balance of each product.
+     * Maps the authenticated investor's products to DTOs and calculates the total portfolio value.
      *
-     * @param investorId the ID of the investor to look up
+     * @param investor the authenticated investor resolved from the JWT
      * @return a fully populated {@link InvestorPortfolioDTO} with product details and total value
-     * @throws InvestorNotFoundException if the investor does not exist
      */
     @Override
-    public InvestorPortfolioDTO getPortfolio(Long investorId) {
+    public InvestorPortfolioDTO getPortfolio(Investor investor) {
 
-        Investor investor = investorFinder.getInvestorByIdOrThrow(investorId);
+        Investor loaded = investorRepository.findByIdWithProducts(investor.getId())
+                .orElseThrow(() -> new InvestorNotFoundException("Investor not found with id " + investor.getId()));
 
-        List<ProductDTO> productDTOS = investor.getProducts().stream()
+        List<ProductDTO> productDTOS = loaded.getProducts().stream()
                 .map(product -> modelMapper.map(product, ProductDTO.class))
                 .toList();
 
@@ -49,10 +45,10 @@ public class InvestorServiceImpl implements InvestorService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return InvestorPortfolioDTO.builder()
-                .investorId(investor.getId())
-                .firstName(investor.getFirstName())
-                .lastName(investor.getLastName())
-                .email(investor.getEmail())
+                .investorId(loaded.getId())
+                .firstName(loaded.getFirstName())
+                .lastName(loaded.getLastName())
+                .email(loaded.getEmail())
                 .products(productDTOS)
                 .totalValue(totalValue)
                 .build();
