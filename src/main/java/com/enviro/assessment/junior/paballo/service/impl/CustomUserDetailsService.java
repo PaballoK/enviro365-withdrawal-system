@@ -1,4 +1,4 @@
-package com.enviro.assessment.junior.paballo.service;
+package com.enviro.assessment.junior.paballo.service.impl;
 
 import com.enviro.assessment.junior.paballo.repository.InvestorRepository;
 import lombok.RequiredArgsConstructor;
