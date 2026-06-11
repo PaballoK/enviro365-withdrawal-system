@@ -16,6 +16,8 @@ import com.enviro.assessment.junior.paballo.repository.TransactionRepository;
 import com.enviro.assessment.junior.paballo.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -31,6 +33,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransactionServiceImpl.class);
 
     private static final int RETIREMENT_AGE = 65;
     private static final BigDecimal MAX_WITHDRAWAL_PERCENT = new BigDecimal("0.90");
@@ -51,6 +55,8 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     @Override
     public TransactionResponseDTO withdraw(WithdrawalRequestDTO request, Investor investor) {
+        logger.info("Processing withdrawal of {} for investorId={} on productId={}",
+                request.getWithdrawalAmount(), investor.getId(), request.getProductId());
 
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id " + request.getProductId()));
@@ -74,6 +80,9 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction saved = transactionRepository.save(withdrawalNotice);
 
+        logger.info("Withdrawal {} completed: investorId={}, productId={}, balanceAfter={}",
+                saved.getId(), investor.getId(), product.getId(), remainingBalance);
+
         return TransactionResponseDTO.builder()
                 .amount(saved.getAmount())
                 .productName(product.getProductName())
@@ -89,13 +98,14 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     @Override
     public TransactionResponseDTO deposit(DepositRequestDTO request, Investor investor) {
-        
-        
+        logger.info("Processing deposit of {} for investorId={} on productId={}",
+                request.getDepositAmount(), investor.getId(), request.getProductId());
+
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(()-> new ProductNotFoundException("Product not found with id " + request.getProductId()));
-        
+
         BigDecimal newBalance = product.getBalance().add(request.getDepositAmount());
-        
+
         product.setBalance(newBalance);
         productRepository.save(product);
 
@@ -109,6 +119,9 @@ public class TransactionServiceImpl implements TransactionService {
                 .build();
 
         Transaction saved = transactionRepository.save(depositNotice);
+
+        logger.info("Deposit {} completed: investorId={}, productId={}, balanceAfter={}",
+                saved.getId(), investor.getId(), product.getId(), newBalance);
 
         return TransactionResponseDTO.builder()
                 .amount(saved.getAmount())

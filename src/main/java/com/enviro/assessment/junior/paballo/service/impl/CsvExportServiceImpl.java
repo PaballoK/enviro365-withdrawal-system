@@ -7,6 +7,8 @@ import com.enviro.assessment.junior.paballo.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,10 +20,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CsvExportServiceImpl implements CsvExportService {
 
+    private static final Logger logger = LoggerFactory.getLogger(CsvExportServiceImpl.class);
+
     private final TransactionService transactionService;
 
     @Override
     public String exportWithdrawalHistory(Investor investor, LocalDate startDate, LocalDate endDate) throws IOException {
+        logger.info("CSV export requested for investorId={}, startDate={}, endDate={}", investor.getId(), startDate, endDate);
+
         List<TransactionResponseDTO> history = transactionService.getTransactionHistory(investor, null);
 
         if (startDate != null) {
@@ -54,6 +60,8 @@ public class CsvExportServiceImpl implements CsvExportService {
                 );
             }
         }
+
+        logger.info("CSV export completed for investorId={}: {} records", investor.getId(), history.size());
 
         return writer.toString();
     }

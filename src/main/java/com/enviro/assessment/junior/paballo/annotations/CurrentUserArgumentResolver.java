@@ -1,6 +1,8 @@
 package com.enviro.assessment.junior.paballo.annotations;
 
 import com.enviro.assessment.junior.paballo.entity.Investor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +14,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 @Component
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private static final Logger logger = LoggerFactory.getLogger(CurrentUserArgumentResolver.class);
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -28,6 +32,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
+            logger.warn("@CurrentUser resolution failed - no authenticated principal in security context");
             throw new IllegalStateException("No authenticated user found");
         }
 

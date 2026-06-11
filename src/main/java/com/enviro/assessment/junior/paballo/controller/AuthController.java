@@ -5,6 +5,8 @@ import com.enviro.assessment.junior.paballo.dto.LoginRequestDTO;
 import com.enviro.assessment.junior.paballo.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,10 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
-        return ResponseEntity.ok(authenticationService.login(request));
+        logger.info("Login attempt for: {}", request.getEmail());
+        AuthenticationResponseDTO response = authenticationService.login(request);
+        logger.info("Login successful for: {}", request.getEmail());
+        return ResponseEntity.ok(response);
     }
 }

@@ -7,6 +7,8 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +22,8 @@ import java.util.function.Function;
 
 @Service
 public class JwtServiceImpl implements JwtService {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtServiceImpl.class);
 
     @Value("${app.jwt-secret}")
     private String jwtSecret;
@@ -63,8 +67,10 @@ public class JwtServiceImpl implements JwtService {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException ex) {
+            logger.warn("Expired JWT token received");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token expired");
         } catch (JwtException ex) {
+            logger.warn("Invalid JWT token: {}", ex.getMessage());
             throw new IllegalArgumentException("Invalid JWT", ex);
         }
     }
